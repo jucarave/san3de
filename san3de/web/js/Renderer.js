@@ -68,6 +68,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var d = mapManager.player.direction;
 	
 	var ang = d + this.fov;
+	var last = 0;
 	
 	for (var i=0;i<this.size.a;i++){
 		var vAng = vec2(Math.cos(ang), -Math.sin(ang));
@@ -142,6 +143,12 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 			hit = (foundA && foundB);
 		}
 		
+		if (Math.abs(dist.a - dist.b) <= 0.1){
+			if (last == 2) dist.a = dist.b + 3;
+			else if (last == 1) dist.b = dist.a + 3;
+		}
+		
+		last = (dist.a < dist.b)? 1 : 2;
 		mDist = (dist.a < dist.b)? dist.a : dist.b;
 		rayP = (dist.a < dist.b)? rayA : rayB;
 		texA = (dist.a < dist.b)? texA : texB;
