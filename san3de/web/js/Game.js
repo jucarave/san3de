@@ -78,8 +78,9 @@ Game.prototype.loopGame = function(deltaT){
 	requestAnimFrame(function(deltaT){ game.loopGame(deltaT); });
 };
 
+var game;
 Utils.addEvent(window, "load", function(){
-	var game = new Game();
+	game = new Game();
 	
 	game.newGame();
 	
