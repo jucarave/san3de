@@ -5,7 +5,8 @@ function Enemy(/*Vec2*/ position, /*String*/ textureCode, /*MapManager*/ mapMana
 	
 	this.direction = Math.PI_2;
 	this.imageIndex = 0;
-	this.imgSpeed = 2;
+	this.imgSpeed = 0;
+	this.imgNum = 0;
 	
 	this.solid = true;
 	this.rotate = false;
@@ -13,13 +14,20 @@ function Enemy(/*Vec2*/ position, /*String*/ textureCode, /*MapManager*/ mapMana
 
 Enemy.prototype.getFaceByDirection = function(direction){
 	var face = 0;
-	var angle = Math.floor((Math.radToDeg(direction) + 360) % 360);
+	var angle = ((Math.radToDeg(direction) + 360) % 360) << 0;
 	
 	if (angle > 25 && angle < 335){
-		face = Math.floor(angle / 50) + 1;
+		face = ((angle / 50) << 0) + 1;
 	}
 	
 	return face;
+};
+
+Enemy.prototype.setTexture = function(textureBaseCode, imageNum, imageSpeed){
+	this.textureCode = textureBaseCode;
+	this.imgNum = imageNum;
+	this.imgSpeed = imageSpeed;
+	this.imageIndex = 0;
 };
 
 Enemy.prototype.getTexture = function(angle){
@@ -41,6 +49,11 @@ Enemy.prototype.getTexture = function(angle){
 };
 
 Enemy.prototype.loop = function(deltaT){
+	if (this.imgSpeed > 0 && this.imgNum > 0){
+		this.imageIndex += this.imgSpeed * deltaT;
+		if (this.imageIndex >= this.imgNum) this.imageIndex = 0;
+	}
+
 	if (this.rotate){
 		this.direction += Math.PI * deltaT;
 	}

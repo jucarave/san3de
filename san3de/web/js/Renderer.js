@@ -202,7 +202,6 @@ RaycastRender.prototype.castTo = function(posA, posB, lAng, rAng){
 	if (x > 1000) return null;
 	
 	var dist = Math.getDistance(posA, posB);
-	//var dist = Math.abs((posA.a - posB.a) / Math.cos(angle));
 	
 	var scale = this.heightR / dist;
 	
