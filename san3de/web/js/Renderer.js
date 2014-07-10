@@ -18,7 +18,9 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.fullFov = Math.degToRad(fieldOfVision);
 	this.lineJ = this.size.a * 4;
 	this.heightR = baseHeight;
+	
 	this.matDist = new Array(this.size.a);
+	this.matHeight = new Array(this.size.a);
 }
 
 RaycastRender.prototype.plot = function(x, y, color){
@@ -165,7 +167,11 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var y2 = Math.round(y1 + line);
 		this.matDist[i] = mDist;
 		
-		this.fillLine(i,y1,y2,tx,tex,colorH,true);
+		var drawSky = true;
+		if (this.matHeight[i] !== undefined && line > this.matHeight[i]) drawSky = false;
+		this.matHeight[i] = line;
+		
+		this.fillLine(i,y1,y2,tx,tex,colorH,drawSky);
 		
 		ang -= this.angVar;
 	}
