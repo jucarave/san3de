@@ -71,6 +71,9 @@ Math.PI3_2 = 3 * Math.PI / 2;
 Math.degToRad = function(value){
 	return value * Math.PI / 180;
 };
+Math.radToDeg = function(value){
+	return value * 180 / Math.PI;
+};
 
 window.requestAnimFrame = 
 	window.requestAnimationFrame       || 

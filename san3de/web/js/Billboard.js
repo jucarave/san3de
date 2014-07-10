@@ -7,5 +7,5 @@ function Billboard(/*Vec2*/ position, /*String*/ textureCode, /*MapManager*/ map
 };
 
 Billboard.prototype.getTexture = function(){
-	return this.textureCode;
+	return {texCode: this.textureCode, xScale: 1};
 };

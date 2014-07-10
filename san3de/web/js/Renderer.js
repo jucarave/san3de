@@ -54,7 +54,7 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 			ind = tx + (ty * texture.w);
 			c = colorHolder[texture[ind]]; 
 			
-			if (!c) throw ind;
+			if (!c) throw texture[ind];
 			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
 				
 			this.plot(x, i, c);
@@ -201,7 +201,7 @@ RaycastRender.prototype.castTo = function(posA, posB, lAng, rAng){
 	var scale = this.heightR / dist;
 	
 	x = Math.round(x);
-	return {x: x, dist: dist, scale: scale};
+	return {x: x, dist: dist, scale: scale, angle: angle};
 };
 
 RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ direction, /*Array*/ instances){
@@ -221,7 +221,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		var ray = this.castTo(position, ins.position, lAng, rAng);
 		if (!ray) continue;
 		
-		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x};
+		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle};
 		var added = false;
 		
 		for (var j=0,jlen=sortedIns.length;j<jlen;j++){
@@ -337,13 +337,15 @@ RaycastRender.prototype.drawDoors = function(instances){
 };
 
 RaycastRender.prototype.drawInstances = function(instances){
-	var ins, y1, y2, tex, color, rel, ol, or, j, x, tx;	
+	var ins, y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
 	for (var i=0,len=instances.length;i<len;i++){
 		ins = instances[i];
 		
 		y1 = Math.round((this.size.b / 2) - ins.scale / 2);
 		y2 = Math.round(y1 + ins.scale);
-		tex = this.game.getBillboard(ins.ins.getTexture());
+		
+		texInfo = ins.ins.getTexture(ins.angle);
+		tex = this.game.getBillboard(texInfo.texCode);
 		color = Colors.billboards;
 		
 		rel = ins.scale / tex.h;
@@ -360,6 +362,7 @@ RaycastRender.prototype.drawInstances = function(instances){
 			if (x > 0 && x < this.size.a){
 				if (ins.dist < this.matDist[x]){
 					tx = (j / ins.scale * tex.w) << 0;
+					if (texInfo.xScale == -1) tx = tex.w - tx;
 					
 					this.fillLine(x,y1,y2,tx,tex,color,false);
 					this.matDist[x] = ins.dist;

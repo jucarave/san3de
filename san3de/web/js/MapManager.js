@@ -67,6 +67,10 @@ MapManager.prototype.getMap = function(){
 	
 	this.instances.push(new Enemy(vec2(7.5,9.5), "texEnemy", this));
 	
+	var ene2 = new Enemy(vec2(6.5,9.5), "texEnemy", this);
+	ene2.rotate = true;
+	this.instances.push(ene2);
+	
 	return map;
 };
 

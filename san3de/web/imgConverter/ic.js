@@ -6,9 +6,9 @@ window.addEventListener("load", function(){
 	var ctx = canvas.getContext("2d");
 	
 	var img = new Image();
-	img.src = "img/texDoor.png";
+	img.src = "img/texEnemy2.png";
 	var offset = 0;
-	var tp = [0,0,32,32];
+	var tp = [0,192,64,64];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
@@ -31,13 +31,11 @@ window.addEventListener("load", function(){
 });
 
 Color = {
-	/*colors: ["ff00ff", "ff7f27", "ffc90e", "ffe179", "000000", "161616", "272727",
-	"522727", "b35454", "874141", "b0a6a6", "ece781", "b0b0b0", "7e7d7d", "001f42",
-	"003066", "004087", "0d0d0d",  "834040", "0b0b0b", "252525", "232323", "414141",
-	"4a381c", "72572d", "46351b", "182319", "162017", "304533", "2e4231", "46634b", "4d2525", "beb668", 
-	"797878", "001e3f", "002f63", "bfb769"],*/
+	colors: ["ff00ff", "ff7f27", "ffc90e", "ffe179", "000000", "161616", "272727",
+	"060606", "121111", "333333", "272f25", "546850", "14120f", "312c23", "443c30",
+	"404e3d"],
 	
-	colors: ["4a0e0b", "60130f", "7d1813", "aa211a", "4f4f4f", "6a6a6a", "8f8f8f", "a7a7a7"],
+	/*colors: ["4a0e0b", "60130f", "7d1813", "aa211a", "4f4f4f", "6a6a6a", "8f8f8f", "a7a7a7"],*/
 	
 	getColor: function(r,g,b){
 		r = Number(r).toString(16);
