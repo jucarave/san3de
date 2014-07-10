@@ -1,5 +1,5 @@
 function Game(){
-	this.eng = new Engine(vec2(640,480), Utils.get("divGame"));
+	this.eng = new Engine(vec2(480,320), Utils.get("divGame"));
 	this.render = new RaycastRender(this.eng.getData(vec2(480,320)), 60, 420, this);
 	this.renderPos = vec2(0,0);
 	
