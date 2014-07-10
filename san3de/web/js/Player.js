@@ -2,9 +2,11 @@ function Player(position, direction, mapManager){
 	this.position = position;
 	this.direction = direction;
 	this.mapManager = mapManager;
+		
+	this.rotationSpd = Math.PI;
+	this.movementSpd = 6;
 	
-	this.rotationSpd = Math.degToRad(60);
-	this.movementSpd = 3;
+	this.canMove = true;
 }
 
 Player.prototype.moveTo = function(xTo, yTo){
@@ -77,9 +79,15 @@ Player.prototype.checkInstance = function(){
 };
 
 Player.prototype.step = function(deltaT){
+	if (!this.canMove) return;
+	
 	this.rotation(deltaT);
 	this.movement(deltaT);
 	this.checkInstance();
+	
+	if (this.mapManager.isOnTrap(this.position)){
+		this.canMove = false;
+	}
 };
 
 Player.prototype.loop = function(deltaT){

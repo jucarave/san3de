@@ -55,6 +55,6 @@ Enemy.prototype.loop = function(deltaT){
 	}
 
 	if (this.rotate){
-		this.direction += Math.PI * deltaT;
+		this.direction += Math.PI2 * deltaT;
 	}
 };

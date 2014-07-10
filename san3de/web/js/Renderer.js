@@ -19,9 +19,22 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.lineJ = this.size.a * 4;
 	this.heightR = baseHeight;
 	
+	this.falling = false;
+	this.z = 0;
+	this.vspeed = 0;
+	
 	this.matDist = new Array(this.size.a);
-	this.matHeight = new Array(this.size.a);
 }
+
+RaycastRender.prototype.fall = function(deltaT){
+	if (isNaN(deltaT)) return;
+	if (!this.falling) return;
+	
+	this.vspeed -= 60;
+	this.z += (this.vspeed * deltaT) << 0;
+	
+	if (this.z < -this.size.b) this.falling = false;
+};
 
 RaycastRender.prototype.plot = function(x, y, color){
 	if (this.isLittleEndian){
@@ -40,14 +53,22 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 	var sy = 0;
 	var ey = this.size.b;
 	
+	if (y2 > ey) y2 = ey;
+	
+	y1 += this.z;
+	y2 += this.z;
 	if (!drawSky){
 		if (y1 > 0) sy = y1;
 		if (y2 < ey) ey = y2;
+	}else if (y1 < 0){
+		back = Colors.floor;
 	}
 	
 	var ty, ind, c;
 	for (var i=sy;i<ey;i++){
 		if (i < y1 || i > y2){
+			if (i - this.z > this.size.b) back = Colors.shadowF;
+		
 			this.plot(x, i, back);
 		}else{
 			back = Colors.floor;
@@ -68,6 +89,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var map = mapManager.map;
 	var p = mapManager.player.position;
 	var d = mapManager.player.direction;
+	var pz = mapManager.player.z;
 	
 	var ang = d + this.fov;
 	var last = 0;
@@ -156,6 +178,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		rayP = (dist.a < dist.b)? rayA : rayB;
 		texA = (dist.a < dist.b)? texA : texB;
 		tex = this.game.getTexture(texA);
+		if (!tex) continue;
 		tx = (dist.a < dist.b)? (rayP.b * tex.w % tex.w) : (rayP.a * tex.w % tex.w);
 		colorH = (dist.a < dist.b)? (Colors.textures) : (Colors.texturesShadow);
 		lastTex = texA;
@@ -167,11 +190,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var y2 = Math.round(y1 + line);
 		this.matDist[i] = mDist;
 		
-		var drawSky = true;
-		if (this.matHeight[i] !== undefined && line > this.matHeight[i]) drawSky = false;
-		this.matHeight[i] = line;
-		
-		this.fillLine(i,y1,y2,tx,tex,colorH,drawSky);
+		this.fillLine(i,y1,y2,tx,tex,colorH,true);
 		
 		ang -= this.angVar;
 	}

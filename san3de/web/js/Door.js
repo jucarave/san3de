@@ -6,7 +6,7 @@ function Door(position, direction, texture, mapManager){
 	
 	this.solid = true;
 	this.imageIndex = 0;
-	this.imgSpeed = 3;
+	this.imgSpeed = 12;
 	this.opening = 0;
 }
 

@@ -31,13 +31,14 @@ Game.prototype.getKeyPressed = function(keyCode){
 Game.prototype.loadTextures = function(){
 	Colors.ceil = [143,155,77];
 	Colors.floor = [115,115,115];
+	Colors.shadowF = [58,58,58];
 	
 	this.eng.loadKTD("E1M1.ktd", this.textures, Colors.textures, Colors.texturesShadow);
 	this.eng.loadKTD("texBillboards.ktd", this.billboards, Colors.billboards, null);
 };
 
 Game.prototype.getTexture = function(texId){
-	if (texId == 0) return null;
+	if (texId == 0 || texId === undefined) return null;
 	
 	var ind = this.textures.indexes[texId];
 	if (!ind) throw "Invalid Texture Index " + texId + "!";
@@ -64,9 +65,12 @@ Game.prototype.newGame = function(deltaT){
 Game.prototype.loopGame = function(deltaT){
 	var game = this;
 	
-	var dT = 1 / (deltaT - this.lastT);
+	var dT = (deltaT - this.lastT) / 1000;
 	this.lastT = deltaT;
 	
+	game.render.raycast(game.map);
+	game.render.fall(dT);
+		
 	game.map.loop(dT);
 	game.render.draw(game.getCtx(), this.renderPos);
 	

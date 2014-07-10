@@ -4,6 +4,7 @@ function MapManager(game){
 	
 	this.instances = [];
 	this.doors = [];
+	this.traps = [];
 	this.map = this.getMap();
 }
 
@@ -14,6 +15,18 @@ MapManager.prototype.isSolid = function(x, y){
 	var tex = this.game.getTexture(t);
 	if (!tex) return false;
 	return tex.solid;
+};
+
+MapManager.prototype.isOnTrap = function(position){
+	var x = (position.a << 0);
+	var y = (position.b << 0);
+	
+	for (var i=0,len=this.traps.length;i<len;i++){
+		if (this.traps[i].position.equals(x, y)){
+			this.game.render.falling = true;
+			return true;
+		}
+	}
 };
 
 MapManager.prototype.getInstanceAt = function(x, y){
@@ -71,13 +84,14 @@ MapManager.prototype.getMap = function(){
 	ene2.rotate = true;
 	this.instances.push(ene2);
 	
+	this.traps.push({position: vec2(12, 3)});
+	this.traps.push({position: vec2(11, 9)});
+	
 	return map;
 };
 
 MapManager.prototype.loop = function(deltaT){
 	if (isNaN(deltaT)) return;
-	this.game.render.raycast(this);
-	
 	this.player.loop(deltaT);
 	
 	for (var i=0,len=this.instances.length;i<len;i++){
