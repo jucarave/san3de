@@ -69,6 +69,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	
 	var ang = d + this.fov;
 	var last = 0;
+	var lastTex = null;
 	
 	for (var i=0;i<this.size.a;i++){
 		var vAng = vec2(Math.cos(ang), -Math.sin(ang));
@@ -143,9 +144,9 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 			hit = (foundA && foundB);
 		}
 		
-		if (Math.abs(dist.a - dist.b) <= 0.1){
-			if (last == 2) dist.a = dist.b + 3;
-			else if (last == 1) dist.b = dist.a + 3;
+		if (Math.abs(dist.a - dist.b) <= 0.01){
+			if (last == 2 && texB == lastTex) dist.a = dist.b + 3;
+			else if (last == 1 && texA == lastTex) dist.b = dist.a + 3;
 		}
 		
 		last = (dist.a < dist.b)? 1 : 2;
@@ -155,6 +156,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		tex = this.game.getTexture(texA);
 		tx = (dist.a < dist.b)? (rayP.b * tex.w % tex.w) : (rayP.a * tex.w % tex.w);
 		colorH = (dist.a < dist.b)? (Colors.textures) : (Colors.texturesShadow);
+		lastTex = texA;
 		
 		mDist *= Math.cos(angB);
 		
