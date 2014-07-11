@@ -73,11 +73,11 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 		}else{
 			back = Colors.floor;
 			
-			ty = ((i - y1) / size * (texture.h - 1)) << 0;
-			ind = tx + (ty * texture.w);
-			c = colorHolder[texture[ind]]; 
+			ty = ((i - y1) / size * (texture.height - 1)) << 0;
+			ind = tx + (ty * texture.width);
+			c = colorHolder[texture.texData[ind]]; 
 			
-			if (!c) throw texture[ind];
+			if (!c) throw texture.texData[ind];
 			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
 				
 			this.plot(x, i, c);
@@ -179,7 +179,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		texA = (dist.a < dist.b)? texA : texB;
 		tex = this.game.getTexture(texA);
 		if (!tex) continue;
-		tx = (dist.a < dist.b)? (rayP.b * tex.w % tex.w) : (rayP.a * tex.w % tex.w);
+		tx = (dist.a < dist.b)? (rayP.b * tex.width % tex.width) : (rayP.a * tex.width % tex.width);
 		colorH = (dist.a < dist.b)? (Colors.textures) : (Colors.texturesShadow);
 		lastTex = texA;
 		
@@ -334,7 +334,7 @@ RaycastRender.prototype.drawDoors = function(instances){
 		
 		xx = 0;
 		size = x2 - x1;
-		rel = size / tex.h;
+		rel = size / tex.height;
 		
 		if (x1 < 0){ 
 			xx = -x1;
@@ -350,8 +350,8 @@ RaycastRender.prototype.drawDoors = function(instances){
 				y1 = Math.round(hv - sc / 2);
 				y2 = Math.round(y1 + sc);
 				
-				tx = ((xx / size) * tex.w) << 0;
-				if (texScale == -1) tx = tex.w - tx - 1;
+				tx = ((xx / size) * tex.width) << 0;
+				if (texScale == -1) tx = tex.width - tx - 1;
 				if (tx < 0) tx = 0;
 			
 				this.fillLine(j,y1,y2,tx,tex,color,false);
@@ -373,8 +373,8 @@ RaycastRender.prototype.drawInstances = function(instances){
 		color = Colors.billboards;
 		
 		rel = ins.scale / tex.h;
-		ol = ins.x + ((tex.ol > 0)? (tex.ol * rel) : 0);
-		or = ins.x + ((tex.or > 0)? (tex.or * rel) : xScale);
+		ol = ins.x + ((tex.offsetL > 0)? (tex.offsetL * rel) : 0);
+		or = ins.x + ((tex.offsetR > 0)? (tex.offsetR * rel) : xScale);
 		
 		if (ins.x + ins.scale < 0) continue;
 		else if (ins.x > this.size.a) continue;
@@ -385,8 +385,8 @@ RaycastRender.prototype.drawInstances = function(instances){
 			
 			if (x > 0 && x < this.size.a){
 				if (ins.dist < this.matDist[x]){
-					tx = (j / ins.scale * tex.w) << 0;
-					if (texInfo.xScale == -1) tx = tex.w - tx;
+					tx = (j / ins.scale * tex.width) << 0;
+					if (texInfo.xScale == -1) tx = tex.width - tx;
 					
 					this.fillLine(x,y1,y2,tx,tex,color,false);
 					this.matDist[x] = ins.dist;

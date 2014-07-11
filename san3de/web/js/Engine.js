@@ -39,9 +39,25 @@ Engine.prototype.loadImage = function(url){
 	return img;
 };
 
+Engine.prototype.parseMap = function(params){
+	var width = parseInt(params[0].trim());
+	var height = parseInt(params[1].trim());
+	var map = new Array(height);
+	var tempMap = params[2].split(",");
+	var ind = 0;
+	
+	for (var i=0;i<height;i++){
+		map[i] = new Uint8ClampedArray(width);
+		for (var j=0;j<width;j++){
+			map[i][j] = tempMap[ind++];
+		}
+	}
+	
+	return map;
+};
+
 Engine.prototype.parseTexture = function(params){
-	if (params.length < 2 || params.length > 7)
-		throw "Wrong number of parameters in texture";
+	if (!params) throw "Wrong number of parameters in texture";
 		
 	var name, solid, width, height, offsetL, offsetR, texData, i;
 	name = params[0].trim();
@@ -63,21 +79,22 @@ Engine.prototype.parseTexture = function(params){
 		texData = new Uint8ClampedArray(params[4].split(","));
 		offsetL = 0;
 		offsetR = width;
-	}
-	else if (params.length == 7){
+	}else if (params.length == 7){
 		solid = parseInt(params[1].trim());
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		offsetL = parseInt(params[4].trim());
 		offsetR = parseInt(params[5].trim());
 		texData = new Uint8ClampedArray(params[6].split(","));
+	}else{
+		throw "Wrong number of parameters in texture";
 	}
 	
 	var texture = new Texture(texData, name, width, height, offsetL, offsetR, solid);
 	return texture;
 };
 
-Engine.prototype.loadKTDNew = function(url, hasShadow){
+Engine.prototype.loadKTD = function(url, hasShadow, callback){
 	var mp = this;
 	var http = Utils.getHttp();
 	var ktd = {ready: false};
@@ -90,6 +107,8 @@ Engine.prototype.loadKTDNew = function(url, hasShadow){
 			var colorsS = [];
 			var player = {};
 			var textures = {indexes: [null]};
+			var instances = [];
+			var map = null;
 			for (var i=0,len=text.length;i<len;i++){
 				var line = text[i].trim();
   				if (line == "") continue; 
@@ -111,6 +130,9 @@ Engine.prototype.loadKTDNew = function(url, hasShadow){
 					}
 				}else if (type == 0x03){
 					var params = data.split(" ");
+					map = mp.parseMap(params);
+				}else if (type == 0x04){
+					var params = data.split(" ");
 					player.x = parseInt(params[0].trim(), 10);
 					player.y = parseInt(params[1].trim(), 10);
 					player.d = parseFloat(params[2].trim());
@@ -119,6 +141,9 @@ Engine.prototype.loadKTDNew = function(url, hasShadow){
 					var tex = mp.parseTexture(params);
 					textures.indexes.push(tex.name);
 					textures[tex.name] = tex;
+				}else if (type >= 0x30){
+					var params = data.split(" ");
+					instances.push(params);
 				}
 			}
 			
@@ -127,82 +152,16 @@ Engine.prototype.loadKTDNew = function(url, hasShadow){
 			ktd.colors = colors;
 			ktd.colorsS = colorsS;
 			ktd.textures = textures;
+			ktd.instances = instances;
+			ktd.map = map;
+			
+			if (callback) callback(ktd);
 		}
 	};
 	http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 	http.send();
 	
 	return ktd;
-};
-
-Engine.prototype.loadKTD = function(url, holder, colorH, colorShadowH){
-	var mp = this;
-	var http = Utils.getHttp();
-	http.open('GET', 'textures/' + url, true);
-	http.onreadystatechange=function() {
-  		if (http.readyState==4 && http.status==200) {
-  			var text = http.responseText.split("\n");
-  			var step = 0;
-  			var texN = "";
-			var width = 0;
-			var height = 0;
-			var offL = 0;
-			var offR = 0;
-			var solid = false;
-  			holder.indexes = [null];
-  			
-  			for (var i=0,len=text.length;i<len;i++){
-  				var line = text[i];
-  				if (line.trim() == ""){
-  					step = 1;
-  					continue;
-  				}
-  				
-  				if (step == 0){
-  					var r = parseInt(line.substring(0,2),16);
-  					var g = parseInt(line.substring(2,4),16);
-  					var b = parseInt(line.substring(4,6),16);
-  					
-  					colorH.push([r,g,b]);
-					
-					if (colorShadowH != null){
-						r = Math.floor(r / 2);
-						g = Math.floor(g / 2);
-						b = Math.floor(b / 2);
-						
-						colorShadowH.push([r,g,b]);
-					}
-  				}else if (step == 1){
-					var inf = line.trim().split(" ");
-  					texN = inf[0].trim();
-					solid = (inf[1] == "T");
-					width = parseInt(inf[2], 10);
-					height = parseInt(inf[3], 10);
-					offL = -1;
-					offR = -1;
-					
-					if (inf[3] && inf[4]){
-						offL = parseInt(inf[4], 10);
-						offR = parseInt(inf[5], 10);
-					}
-					
-  					step = 2;
-  				}else if (step == 2){
-					var colors = line.trim().split(",");
-  					holder[texN] = new Uint8ClampedArray(colors);
-					holder[texN].w = width;
-					holder[texN].h = height;
-					holder[texN].ol = offL;
-					holder[texN].or = offR;
-					holder[texN].solid = solid;
-  					holder.indexes.push(texN);
-  				}
-  			}
-    	}
-  	};
-  
-	http.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	http.send();
 };
 
 Engine.prototype.getData = function(/*vec2*/ size){

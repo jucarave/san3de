@@ -1,6 +1,6 @@
 function Player(position, direction, mapManager){
 	this.position = position;
-	this.direction = direction;
+	this.direction = Math.degToRad(direction);
 	this.mapManager = mapManager;
 		
 	this.rotationSpd = Math.PI;

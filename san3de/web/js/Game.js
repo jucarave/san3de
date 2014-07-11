@@ -12,7 +12,9 @@ function Game(){
 	
 	this.lastT = 0;
 	
-	this.loadTextures();
+	var game = this;
+	this.eng.loadKTD("texBillboards.ktd", false, function(data){ game.parseBillboards(data); });
+	this.eng.loadKTD("testMap.ktd", true, function(data){ game.parseMap(data); });
 }
 
 Game.prototype.getCtx = function(){
@@ -28,13 +30,19 @@ Game.prototype.getKeyPressed = function(keyCode){
 	return false;
 };
 
-Game.prototype.loadTextures = function(){
-	Colors.ceil = [143,155,77];
-	Colors.floor = [115,115,115];
-	Colors.shadowF = [58,58,58];
+Game.prototype.parseBillboards = function(data){
+	this.billboards = data.textures;
+	Colors.billboards = data.colors;
+};
+
+Game.prototype.parseMap = function(data){
+	var game = this;
+	game.textures = data.textures;
+	game.map = new MapManager(game, data.map, data.player);
+	game.map.createInstances(data.instances);
 	
-	this.eng.loadKTD("E1M1.ktd", this.textures, Colors.textures, Colors.texturesShadow);
-	this.eng.loadKTD("texBillboards.ktd", this.billboards, Colors.billboards, null);
+	Colors.textures = data.colors;
+	Colors.texturesShadow = data.colorsS;
 };
 
 Game.prototype.getTexture = function(texId){
@@ -55,7 +63,6 @@ Game.prototype.getBillboard = function(texCode){
 Game.prototype.newGame = function(deltaT){
 	var game = this;
 	if (game.textures.indexes && game.billboards.indexes){
-		game.map = new MapManager(game);
 		game.loopGame(deltaT);
 	}else{
 		setTimeout(function(){ game.newGame(deltaT); }, game.fps);
@@ -65,22 +72,22 @@ Game.prototype.newGame = function(deltaT){
 Game.prototype.loopGame = function(deltaT){
 	var game = this;
 	
-	var dT = (deltaT - this.lastT) / 1000;
-	this.lastT = deltaT;
+	var dT = (deltaT - game.lastT) / 1000;
+	game.lastT = deltaT;
 	
-	game.render.raycast(game.map);
-	game.render.fall(dT);
-		
-	game.map.loop(dT);
-	game.render.draw(game.getCtx(), this.renderPos);
+	if (game.map){
+		game.render.raycast(game.map);
+		game.render.fall(dT);
 	
-	//setTimeout(function(){ game.loopGame(); }, game.fps);
+		game.map.loop(dT);
+		game.render.draw(game.getCtx(), game.renderPos);
+	}
+	
 	requestAnimFrame(function(deltaT){ game.loopGame(deltaT); });
 };
 
-var game;
 Utils.addEvent(window, "load", function(){
-	game = new Game();
+	var game = new Game();
 	
 	game.newGame();
 	

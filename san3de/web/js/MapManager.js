@@ -1,11 +1,12 @@
-function MapManager(game){
+function MapManager(game, map, player){
 	this.game = game;
 	this.player = null;
 	
 	this.instances = [];
 	this.doors = [];
 	this.traps = [];
-	this.map = this.getMap();
+	this.map = map;
+	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
 }
 
 MapManager.prototype.isSolid = function(x, y){
@@ -45,49 +46,19 @@ MapManager.prototype.getInstanceAt = function(x, y){
 	return null;
 };
 
-MapManager.prototype.getMap = function(){
-	var map = [
-		[1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,2,2,2,2,0,0,0,0,0,2,2,1],
-		[1,0,2,0,0,2,0,0,0,0,0,0,0,1],
-		[1,0,2,2,2,2,0,0,0,0,0,2,2,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,2,0,2,1],
-		[1,0,0,0,0,0,0,0,0,0,2,0,0,1],
-		[1,0,2,0,2,0,0,0,0,0,2,0,0,1],
-		[1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-	];
-	
-	for (var i=0,len=map.length;i<len;i++)
-		map[i] = new Uint8ClampedArray(map[i]);
-	
-	this.player = new Player(vec2(1.5,1.5), 0, this);
-	
-	this.instances.push(new Billboard(vec2(5.5,6.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(6.5,6.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(7.5,6.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(8.5,6.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(5.5,7.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(6.5,7.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(7.5,7.5), "texLamp", this));
-	this.instances.push(new Billboard(vec2(8.5,7.5), "texLamp", this));
-	
-	this.doors.push(new Door(vec2(11.5,8.5), "H", "texDoor", this));
-	this.doors.push(new Door(vec2(11.5,3.5), "V", "texDoor", this));
-	
-	this.instances.push(new Enemy(vec2(7.5,9.5), "texEnemy", this));
-	
-	var ene2 = new Enemy(vec2(6.5,9.5), "texEnemy", this);
-	ene2.rotate = true;
-	this.instances.push(ene2);
-	
-	this.traps.push({position: vec2(12, 3)});
-	this.traps.push({position: vec2(11, 9)});
-	
-	return map;
+MapManager.prototype.createInstances = function(instances){
+	for (var i=0,len=instances.length;i<len;i++){
+		var ins = instances[i];
+		var type = parseInt(ins[0]);
+		var x = parseInt(ins[1]);
+		var y = parseInt(ins[2]);
+		var vec = vec2(x + 0.5, y + 0.5);
+		
+		if (type == 0){ this.instances.push(new Billboard(vec, ins[3], this)); }
+		else if (type == 1){ this.doors.push(new Door(vec, ins[4], ins[3], this)); }
+		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[3]), ins[4], this)); }
+		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
+	}
 };
 
 MapManager.prototype.loop = function(deltaT){

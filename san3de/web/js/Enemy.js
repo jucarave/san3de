@@ -1,9 +1,9 @@
-function Enemy(/*Vec2*/ position, /*String*/ textureCode, /*MapManager*/ mapManager){
+function Enemy(/*Vec2*/ position, /*int*/ direction, /*String*/ textureCode, /*MapManager*/ mapManager){
 	this.position = position;
 	this.textureCode = textureCode;
 	this.mapManager = mapManager;
 	
-	this.direction = Math.PI_2;
+	this.direction = Math.degToRad(direction);
 	this.imageIndex = 0;
 	this.imgSpeed = 0;
 	this.imgNum = 0;
