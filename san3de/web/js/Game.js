@@ -6,6 +6,10 @@ function Game(){
 	this.map = null;
 	this.fps = Math.floor(1000 / 30);
 	
+	// Debug variables for showing the FPS count
+	this.numberFrames = 0;
+	this.firstFrame = Date.now();
+	
 	this.textures = {};
 	this.billboards = {};
 	this.keys = [];
@@ -69,6 +73,13 @@ Game.prototype.newGame = function(deltaT){
 	}
 };
 
+Game.prototype.drawFPS = function(now){
+	var fps = Math.floor((++this.numberFrames) / ((now - this.firstFrame) / 1000));
+	var ctx = this.getCtx();
+	ctx.fillStyle = "white";
+	ctx.fillText("FPS: " + fps, 16, 16);
+};
+
 Game.prototype.loopGame = function(deltaT){
 	var game = this;
 	
@@ -85,6 +96,9 @@ Game.prototype.loopGame = function(deltaT){
 			game.map.loop();
 			game.render.draw(game.getCtx(), game.renderPos);
 		}
+		
+		//Debug: Draw the FPS count
+		this.drawFPS(now);
 	}
 	
 	requestAnimFrame(function(deltaT){ game.loopGame(deltaT); });
