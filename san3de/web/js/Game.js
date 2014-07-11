@@ -122,4 +122,10 @@ Utils.addEvent(window, "load", function(){
 		
 		game.keys[e.keyCode] = 0;
 	});
+	
+	// Debug function to keep right the fps count
+	Utils.addEvent(window, "focus", function(){
+		game.firstFrame = Date.now();
+		game.numberFrames = 0;
+	});
 });
