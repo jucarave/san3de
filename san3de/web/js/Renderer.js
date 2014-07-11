@@ -26,12 +26,11 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.matDist = new Array(this.size.a);
 }
 
-RaycastRender.prototype.fall = function(deltaT){
-	if (isNaN(deltaT)) return;
+RaycastRender.prototype.fall = function(){
 	if (!this.falling) return;
 	
 	this.vspeed -= 60;
-	this.z += (this.vspeed * deltaT) << 0;
+	this.z += this.vspeed;
 	
 	if (this.z < -this.size.b) this.falling = false;
 };

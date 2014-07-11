@@ -6,7 +6,7 @@ function Door(position, direction, texture, mapManager){
 	
 	this.solid = true;
 	this.imageIndex = 0;
-	this.imgSpeed = 12;
+	this.imgSpeed = 1/2;
 	this.opening = 0;
 }
 
@@ -25,16 +25,16 @@ Door.prototype.active = function(){
 	}
 };
 
-Door.prototype.loop = function(deltaT){
+Door.prototype.loop = function(){
 	if (this.opening == 1){
-		this.imageIndex += this.imgSpeed * deltaT;
+		this.imageIndex += this.imgSpeed;
 		if (this.imageIndex >= 3){
 			this.opening = 0;
 			this.solid = false;
 			this.imageIndex = 2;
 		}
 	}else if (this.opening == 2){
-		this.imageIndex -= this.imgSpeed * deltaT;
+		this.imageIndex -= this.imgSpeed;
 		if (this.imageIndex <= 0){
 			this.opening = 0;
 			this.solid = true;

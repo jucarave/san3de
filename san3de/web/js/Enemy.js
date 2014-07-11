@@ -48,13 +48,13 @@ Enemy.prototype.getTexture = function(angle){
 	return obj;
 };
 
-Enemy.prototype.loop = function(deltaT){
+Enemy.prototype.loop = function(){
 	if (this.imgSpeed > 0 && this.imgNum > 0){
-		this.imageIndex += this.imgSpeed * deltaT;
+		this.imageIndex += this.imgSpeed;
 		if (this.imageIndex >= this.imgNum) this.imageIndex = 0;
 	}
 
 	if (this.rotate){
-		this.direction += Math.PI2 * deltaT;
+		this.direction += Math.PI2;
 	}
 };

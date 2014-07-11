@@ -72,15 +72,19 @@ Game.prototype.newGame = function(deltaT){
 Game.prototype.loopGame = function(deltaT){
 	var game = this;
 	
-	var dT = (deltaT - game.lastT) / 1000;
-	game.lastT = deltaT;
+	var now = Date.now();
+	var dT = (now - game.lastT);
 	
-	if (game.map){
-		game.render.raycast(game.map);
-		game.render.fall(dT);
-	
-		game.map.loop(dT);
-		game.render.draw(game.getCtx(), game.renderPos);
+	if (dT > this.fps){
+		game.lastT = now - (dT % this.fps);
+		
+		if (game.map){
+			game.render.raycast(game.map);
+			game.render.fall();
+		
+			game.map.loop();
+			game.render.draw(game.getCtx(), game.renderPos);
+		}
 	}
 	
 	requestAnimFrame(function(deltaT){ game.loopGame(deltaT); });

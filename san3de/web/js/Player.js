@@ -3,8 +3,8 @@ function Player(position, direction, mapManager){
 	this.direction = Math.degToRad(direction);
 	this.mapManager = mapManager;
 		
-	this.rotationSpd = Math.PI;
-	this.movementSpd = 6;
+	this.rotationSpd = Math.degToRad(5);
+	this.movementSpd = 0.3;
 	
 	this.canMove = true;
 }
@@ -29,7 +29,7 @@ Player.prototype.moveTo = function(xTo, yTo){
 	}
 };
 
-Player.prototype.movement = function(deltaT){
+Player.prototype.movement = function(){
 	var game = this.mapManager.game;
 	
 	var xTo = 0, yTo = 0;
@@ -48,18 +48,18 @@ Player.prototype.movement = function(deltaT){
 	}
 	
 	if (xTo != 0 || yTo != 0){
-		this.moveTo(xTo * deltaT, yTo * deltaT);
+		this.moveTo(xTo, yTo);
 	}
 };
 
-Player.prototype.rotation = function(deltaT){
+Player.prototype.rotation = function(){
 	var game = this.mapManager.game;
 	
 	if (game.keys[81] == 1){
-		this.direction += this.rotationSpd * deltaT;
+		this.direction += this.rotationSpd;
 		this.direction = (this.direction + Math.PI2) % Math.PI2;
 	}else if (game.keys[69] == 1){
-		this.direction -= this.rotationSpd * deltaT;
+		this.direction -= this.rotationSpd;
 		this.direction = (this.direction + Math.PI2) % Math.PI2;
 	}
 };
@@ -78,11 +78,11 @@ Player.prototype.checkInstance = function(){
 	}
 };
 
-Player.prototype.step = function(deltaT){
+Player.prototype.step = function(){
 	if (!this.canMove) return;
 	
-	this.rotation(deltaT);
-	this.movement(deltaT);
+	this.rotation();
+	this.movement();
 	this.checkInstance();
 	
 	if (this.mapManager.isOnTrap(this.position)){
@@ -90,6 +90,6 @@ Player.prototype.step = function(deltaT){
 	}
 };
 
-Player.prototype.loop = function(deltaT){
-	this.step(deltaT);
+Player.prototype.loop = function(){
+	this.step();
 };

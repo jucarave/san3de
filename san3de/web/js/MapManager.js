@@ -61,17 +61,16 @@ MapManager.prototype.createInstances = function(instances){
 	}
 };
 
-MapManager.prototype.loop = function(deltaT){
-	if (isNaN(deltaT)) return;
-	this.player.loop(deltaT);
+MapManager.prototype.loop = function(){
+	this.player.loop();
 	
 	for (var i=0,len=this.instances.length;i<len;i++){
 		var ins = this.instances[i];
-		if (ins.loop) ins.loop(deltaT);
+		if (ins.loop) ins.loop();
 	}
 	
 	for (var i=0,len=this.doors.length;i<len;i++){
 		var ins = this.doors[i];
-		if (ins.loop) ins.loop(deltaT);
+		if (ins.loop) ins.loop();
 	}
 };
