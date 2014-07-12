@@ -54,7 +54,7 @@ MapManager.prototype.createInstances = function(instances){
 		var y = parseInt(ins[2]);
 		var vec = vec2(x + 0.5, y + 0.5);
 		
-		if (type == 0){ this.instances.push(new Billboard(vec, ins[3], this)); }
+		if (type == 0){ this.instances.push(new Billboard(vec, ins[3], ins.splice(4), this)); }
 		else if (type == 1){ this.doors.push(new Door(vec, ins[4], ins[3], this)); }
 		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[3]), ins[4], this)); }
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }

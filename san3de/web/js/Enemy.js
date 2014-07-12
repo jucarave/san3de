@@ -7,6 +7,7 @@ function Enemy(/*Vec2*/ position, /*int*/ direction, /*String*/ textureCode, /*M
 	this.imageIndex = 0;
 	this.imgSpeed = 0;
 	this.imgNum = 0;
+	this.visible = true;
 	
 	this.solid = true;
 	this.rotate = false;

@@ -68,8 +68,8 @@ Player.prototype.checkInstance = function(){
 	var game = this.mapManager.game;
 	
 	if (game.getKeyPressed(13)){
-		var xTo = (this.position.a + Math.cos(this.direction)) << 0;
-		var yTo = (this.position.b - Math.sin(this.direction)) << 0;
+		var xTo = (this.position.a + Math.cos(this.direction) * 0.8) << 0;
+		var yTo = (this.position.b - Math.sin(this.direction) * 0.8) << 0;
 		
 		var ins = this.mapManager.getInstanceAt(xTo, yTo);
 		if (ins != null && ins.active){

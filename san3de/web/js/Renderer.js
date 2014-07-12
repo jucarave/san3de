@@ -243,6 +243,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 	
 	for (var i=0,len=instances.length;i<len;i++){
 		var ins = instances[i];
+		if (!ins.visible) continue;
 		
 		var xx = Math.abs(ins.position.a - position.a);
 		var yy = Math.abs(ins.position.b - position.b);
