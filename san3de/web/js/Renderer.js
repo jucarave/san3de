@@ -51,6 +51,7 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 	
 	var sy = 0;
 	var ey = this.size.b;
+	var draw = false;
 	
 	if (y2 > ey) y2 = ey;
 	
@@ -68,6 +69,7 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 		if (i < y1 || i > y2){
 			if (i - this.z > this.size.b) back = Colors.shadowF;
 		
+			draw = true;
 			this.plot(x, i, back);
 		}else{
 			back = Colors.floor;
@@ -82,9 +84,12 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 			if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
 			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
 				
+			draw = true;
 			this.plot(x, i, c);
 		}
 	}
+	
+	return draw;
 };
 
 RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
@@ -197,8 +202,8 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		ang -= this.angVar;
 	}
 	
-	this.objectCasting(p, d, mapManager.instances);
 	this.doorCasting(p, d, mapManager.doors);
+	this.objectCasting(p, d, mapManager.instances);
 	
 	this.canvas.data.set(this.buf8);
 };
@@ -356,7 +361,8 @@ RaycastRender.prototype.drawDoors = function(instances){
 				if (texScale == -1) tx = tex.width - tx - 1;
 				if (tx < 0) tx = 0;
 			
-				this.fillLine(j,y1,y2,tx,tex,color,false);
+				if (this.fillLine(j,y1,y2,tx,tex,color,false))
+					this.matDist[j] = dis;
 			}
 		}
 	}
@@ -375,15 +381,12 @@ RaycastRender.prototype.drawInstances = function(instances){
 		color = Colors.billboards;
 		
 		rel = ins.scale / tex.h;
-		//ol = ins.x + ((tex.offsetL > 0)? (tex.offsetL * rel) : 0);
-		//or = ins.x + ((tex.offsetR > 0)? (tex.offsetR * rel) : xScale);
 		
 		if (ins.x + ins.scale < 0) continue;
 		else if (ins.x > this.size.a) continue;
 		
 		for (j=0;j<ins.scale;j++){
 			x = ins.x + j;
-			//if (x < ol || x > or) continue;
 			
 			if (x > 0 && x < this.size.a){
 				if (ins.dist < this.matDist[x]){
@@ -394,7 +397,6 @@ RaycastRender.prototype.drawInstances = function(instances){
 					else tx -= tex.offsetL;
 					
 					this.fillLine(x,y1,y2,tx,tex,color,false);
-					this.matDist[x] = ins.dist;
 				}
 			}
 		}
