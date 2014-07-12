@@ -77,7 +77,7 @@ Game.prototype.drawFPS = function(now){
 	var fps = Math.floor((++this.numberFrames) / ((now - this.firstFrame) / 1000));
 	var ctx = this.getCtx();
 	ctx.fillStyle = "white";
-	ctx.fillText("FPS: " + fps, 16, 16);
+	ctx.fillText("FPS: " + fps + "/30", 16, 16);
 };
 
 Game.prototype.loopGame = function(deltaT){

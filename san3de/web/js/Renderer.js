@@ -73,7 +73,9 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 			back = Colors.floor;
 			
 			ty = ((i - y1) / size * (texture.height - 1)) << 0;
-			ind = tx + (ty * texture.width);
+			ind = tx + (ty * texture.width) - texture.offsetY;
+			if (ind < 0) continue;
+			
 			c = colorHolder[texture.texData[ind]]; 
 			
 			if (!c) throw texture.texData[ind];
