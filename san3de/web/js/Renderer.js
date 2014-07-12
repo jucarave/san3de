@@ -73,12 +73,13 @@ RaycastRender.prototype.fillLine = function(x, y1, y2, tx, texture, colorHolder,
 			back = Colors.floor;
 			
 			ty = ((i - y1) / size * (texture.height - 1)) << 0;
-			ind = tx + (ty * texture.width) - texture.offsetY;
-			if (ind < 0) continue;
+			if (ty < texture.offsetT || ty >= texture.offsetB) continue;
+			ty -= texture.offsetT;
 			
-			c = colorHolder[texture.texData[ind]]; 
+			ind = tx + (ty * texture.innerW);
+			c = colorHolder[texture.texData[ind]];
 			
-			if (!c) throw texture.texData[ind];
+			if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
 			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
 				
 			this.plot(x, i, c);
@@ -374,20 +375,23 @@ RaycastRender.prototype.drawInstances = function(instances){
 		color = Colors.billboards;
 		
 		rel = ins.scale / tex.h;
-		ol = ins.x + ((tex.offsetL > 0)? (tex.offsetL * rel) : 0);
-		or = ins.x + ((tex.offsetR > 0)? (tex.offsetR * rel) : xScale);
+		//ol = ins.x + ((tex.offsetL > 0)? (tex.offsetL * rel) : 0);
+		//or = ins.x + ((tex.offsetR > 0)? (tex.offsetR * rel) : xScale);
 		
 		if (ins.x + ins.scale < 0) continue;
 		else if (ins.x > this.size.a) continue;
 		
 		for (j=0;j<ins.scale;j++){
 			x = ins.x + j;
-			if (x < ol || x > or) continue;
+			//if (x < ol || x > or) continue;
 			
 			if (x > 0 && x < this.size.a){
 				if (ins.dist < this.matDist[x]){
 					tx = (j / ins.scale * tex.width) << 0;
-					if (texInfo.xScale == -1) tx = tex.width - tx;
+					
+					if (tx < tex.offsetL || tx >= tex.offsetR) continue;
+					if (texInfo.xScale == -1) tx = tex.width - tx - tex.invOffR;
+					else tx -= tex.offsetL;
 					
 					this.fillLine(x,y1,y2,tx,tex,color,false);
 					this.matDist[x] = ins.dist;

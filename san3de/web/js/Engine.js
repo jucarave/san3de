@@ -59,9 +59,9 @@ Engine.prototype.parseMap = function(params){
 Engine.prototype.parseTexture = function(params){
 	if (!params) throw "Wrong number of parameters in texture";
 		
-	var name, solid, width, height, offsetL, offsetR, texData, i, offsetY;
+	var name, solid, width, height, offsetL, offsetR, texData, i, offsetT;
 	name = params[0].trim();
-	offsetY = 0;
+	offsetT = 0;
 	
 	if (params.length == 2 || params.length == 3){
 		solid = (params.length == 2)? false : (params[1].trim() == "T");
@@ -73,6 +73,7 @@ Engine.prototype.parseTexture = function(params){
 		height = width;
 		offsetL = 0;
 		offsetR = width;
+		offsetB = height;
 	}else if (params.length == 5){
 		solid = parseInt(params[1].trim());
 		width = parseInt(params[2].trim());
@@ -80,26 +81,29 @@ Engine.prototype.parseTexture = function(params){
 		texData = new Uint8ClampedArray(params[4].split(","));
 		offsetL = 0;
 		offsetR = width;
+		offsetB = height;
 	}else if (params.length == 7){
 		solid = parseInt(params[1].trim());
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		offsetL = parseInt(params[4].trim());
 		offsetR = parseInt(params[5].trim());
+		offsetB = height;
 		texData = new Uint8ClampedArray(params[6].split(","));
-	}else if (params.length == 8){
+	}else if (params.length == 9){
 		solid = parseInt(params[1].trim());
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		offsetL = parseInt(params[4].trim());
 		offsetR = parseInt(params[5].trim());
-		offsetY = parseInt(params[6].trim());
-		texData = new Uint8ClampedArray(params[7].split(","));
+		offsetT = parseInt(params[6].trim());
+		offsetB = parseInt(params[7].trim());
+		texData = new Uint8ClampedArray(params[8].split(","));
 	}else{
-		throw "Wrong number of parameters in texture";
+		throw "Wrong number of parameters in texture: " + params.length;
 	}
 	
-	var texture = new Texture(texData, name, width, height, offsetL, offsetR, offsetY, solid);
+	var texture = new Texture(texData, name, width, height, offsetL, offsetR, offsetT, offsetB, solid);
 	return texture;
 };
 

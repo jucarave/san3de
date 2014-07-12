@@ -8,7 +8,7 @@ window.addEventListener("load", function(){
 	var img = new Image();
 	img.src = "img/texEnemy2.png";
 	var offset = 0;
-	var tp = [0,192,64,64];
+	var tp = [0,122,16,41];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
