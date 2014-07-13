@@ -253,6 +253,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		var ray = this.castTo(position, ins.position, lAng, rAng);
 		if (!ray) continue;
 		
+		ray.x = Math.round(ray.x - ray.scale / 2);
 		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle};
 		var added = false;
 		

@@ -75,7 +75,7 @@ Engine.prototype.parseTexture = function(params){
 		offsetR = width;
 		offsetB = height;
 	}else if (params.length == 5){
-		solid = parseInt(params[1].trim());
+		solid = (params[1].trim() == "T");
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		texData = new Uint8ClampedArray(params[4].split(","));
@@ -83,7 +83,7 @@ Engine.prototype.parseTexture = function(params){
 		offsetR = width;
 		offsetB = height;
 	}else if (params.length == 7){
-		solid = parseInt(params[1].trim());
+		solid = (params[1].trim() == "T");
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		offsetL = parseInt(params[4].trim());
@@ -91,7 +91,7 @@ Engine.prototype.parseTexture = function(params){
 		offsetB = height;
 		texData = new Uint8ClampedArray(params[6].split(","));
 	}else if (params.length == 9){
-		solid = parseInt(params[1].trim());
+		solid = (params[1].trim() == "T");
 		width = parseInt(params[2].trim());
 		height = parseInt(params[3].trim());
 		offsetL = parseInt(params[4].trim());

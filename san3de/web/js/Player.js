@@ -16,7 +16,7 @@ Player.prototype.moveTo = function(xTo, yTo){
 	
 	if (!this.mapManager.isSolid(xx, yy)){
 		var ins = this.mapManager.getInstanceAt(xx, yy);
-		if (!ins || !ins.solid)
+		if (!ins || !ins.isSolid())
 			this.position.a += xTo * this.movementSpd;
 	}
 	
@@ -24,7 +24,7 @@ Player.prototype.moveTo = function(xTo, yTo){
 	yy = Math.floor(this.position.b + yTo * spd);
 	if (!this.mapManager.isSolid(xx, yy)){
 		var ins = this.mapManager.getInstanceAt(xx, yy);
-		if (!ins || !ins.solid)
+		if (!ins || !ins.isSolid())
 			this.position.b += yTo * this.movementSpd;
 	}
 };

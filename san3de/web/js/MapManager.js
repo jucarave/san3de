@@ -30,6 +30,17 @@ MapManager.prototype.isOnTrap = function(position){
 	}
 };
 
+MapManager.prototype.isTextureSolid = function(textureCode){
+	var tex = this.game.textures[textureCode];
+	if (tex == null)
+		tex = this.game.billboards[textureCode];
+		
+	if (tex && tex.solid){
+		return true;
+	}
+	return false;
+};
+
 MapManager.prototype.getInstanceAt = function(x, y){
 	for (var i=0,len=this.instances.length;i<len;i++){
 		var ins = this.instances[i];

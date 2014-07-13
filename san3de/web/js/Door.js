@@ -15,6 +15,10 @@ Door.prototype.getTexture = function(){
 	return this.texture + img;
 };
 
+Door.prototype.isSolid = function(){
+	return this.solid;
+};
+
 Door.prototype.active = function(){
 	if (this.opening != 0) return;
 	

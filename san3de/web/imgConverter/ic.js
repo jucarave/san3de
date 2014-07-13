@@ -6,9 +6,9 @@ window.addEventListener("load", function(){
 	var ctx = canvas.getContext("2d");
 	
 	var img = new Image();
-	img.src = "img/texLamp.png";
+	img.src = "img/texBulb.png";
 	var offset = 0;
-	var tp = [0,23,8,5];
+	var tp = [0,32,13,9];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
@@ -31,11 +31,11 @@ window.addEventListener("load", function(){
 });
 
 Color = {
-	colors: ["ff00ff", "ff7f27", "ffc90e", "ffe179", "000000", "161616", "272727",
-	"060606", "121111", "333333", "272f25", "546850", "14120f", "312c23", "443c30",
-	"404e3d"],
+	colors: ["FF00FF", "FF7F27", "FFC90E", "FFE179", "000000", "161616", "272727",
+	"060606", "121111", "333333", "272F25", "546850", "14120F", "312C23", "443C30",
+	"404E3D","4A4A4A","8A8A8A","FFFFC9"],
 	
-	/*colors: ["4a0e0b", "60130f", "7d1813", "aa211a", "4f4f4f", "6a6a6a", "8f8f8f", "a7a7a7"],*/
+	/*colors: ["4A0E0B","60130F","7D1813","AA211A","4F4F4F","6A6A6A","8F8F8F","A7A7A7","000000","242835","333A4A","4D5873","FF00FF"],*/
 	
 	getColor: function(r,g,b){
 		r = Number(r).toString(16);
@@ -47,6 +47,7 @@ Color = {
 		if (b.length == 1) b = "0" + b;
 		
 		var hex = r+g+b;
+		hex = hex.toUpperCase();
 		var ind = this.colors.length;
 		for (var i=0,len=this.colors.length;i<len;i++){
 			if (this.colors[i] == hex){

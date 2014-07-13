@@ -49,6 +49,10 @@ Enemy.prototype.getTexture = function(angle){
 	return obj;
 };
 
+Enemy.prototype.isSolid = function(){
+	return this.solid;
+};
+
 Enemy.prototype.loop = function(){
 	if (this.imgSpeed > 0 && this.imgNum > 0){
 		this.imageIndex += this.imgSpeed;
