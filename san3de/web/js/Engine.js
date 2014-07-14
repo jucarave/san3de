@@ -1,3 +1,7 @@
+/*===================================================
+	The engine class handles the canvas, context
+	and load data like Images and Map data
+===================================================*/
 function Engine(size, container){
 	this.canvas = this.createCanvas(size, container);
 	this.ctx = this.getCtx(this.canvas);
@@ -5,6 +9,10 @@ function Engine(size, container){
 	this.images = [];
 }
 
+/*===================================================
+	Creates a canvas and appends it to a html
+	element object.
+===================================================*/
 Engine.prototype.createCanvas = function(size, container){
 	var canvas = document.createElement("canvas");
 	canvas.width = size.a;
@@ -15,6 +23,10 @@ Engine.prototype.createCanvas = function(size, container){
 	return canvas;
 };
 
+/*===================================================
+	Creates the context of a canvas, setting it
+	width and height
+===================================================*/
 Engine.prototype.getCtx = function(canvas){
 	var ctx = canvas.getContext("2d");
 	
@@ -24,12 +36,17 @@ Engine.prototype.getCtx = function(canvas){
 	return ctx;
 };
 
+/*===================================================
+	Load an Image from a url and save it in the
+	engine images memory.
+===================================================*/
 Engine.prototype.loadImage = function(url){
 	var img = new Image();
 	
 	img.src = url;
 	img.ready = false;
 	
+	// When the image is loaded, then mark it as ready
 	Utils.addEvent(img, "load", function(){
 		img.ready = true;
 	});
@@ -39,6 +56,15 @@ Engine.prototype.loadImage = function(url){
 	return img;
 };
 
+/*===================================================
+	Gets a KTD line and creates an Array
+	containing the map data.
+	
+	Parameters of the line:
+	Argument[0]: Width
+	Argument[1]: Height
+	Argument[2]: A single line of data separated by commas
+===================================================*/
 Engine.prototype.parseMap = function(params){
 	var width = parseInt(params[0].trim());
 	var height = parseInt(params[1].trim());
@@ -56,6 +82,49 @@ Engine.prototype.parseMap = function(params){
 	return map;
 };
 
+/*===================================================
+	Parse a KTD line and creates a texture object
+	
+	Parameters of the line:
+	
+	When only 2 arguments are supplied:
+	Argument[0]: Name of the texture
+	Argument[1]: Data of the texture (Must be 
+				 square and its width must have
+				 a perfect square root)
+				 
+	When 3 arguments are supplied:
+	Argument[0]: Name of the texture
+	Argument[1]: Is the texture solid (T/F)
+	Argument[2]: Data of the texture (Same as when 2)
+	
+	When 5 arguments are supplied:
+	Argument[0]: Name of the texture
+	Argument[1]: Is the texture solid (T/F)
+	Argument[2]: Width of the texture
+	Argument[3]: Height of the texture
+	Argument[4]: Data of the texture (no constraints)
+	
+	When 7 arguments are supplied:
+	Argument[0]: Name of the texture
+	Argument[1]: Is the texture solid (T/F)
+	Argument[2]: Base Width of the texture
+	Argument[3]: Base Height of the texture
+	Argument[4]: Real image bounding box left
+	Argument[5]: Real image bounding box right
+	Argument[6]: Data of the texture (no constraints)
+	
+	When 9 arguments are supplied:
+	Argument[0]: Name of the texture
+	Argument[1]: Is the texture solid (T/F)
+	Argument[2]: Base Width of the texture
+	Argument[3]: Base Height of the texture
+	Argument[4]: Real image bounding box left
+	Argument[5]: Real image bounding box right
+	Argument[6]: Real image bounding box top
+	Argument[7]: Real image bounding box bottom
+	Argument[8]: Data of the texture (no constraints)
+===================================================*/
 Engine.prototype.parseTexture = function(params){
 	if (!params) throw "Wrong number of parameters in texture";
 		
@@ -107,6 +176,10 @@ Engine.prototype.parseTexture = function(params){
 	return texture;
 };
 
+/*===================================================
+	Loads a KTD file from a url, parse all the
+	data and call a callback function if supplied
+===================================================*/
 Engine.prototype.loadKTD = function(url, hasShadow, callback){
 	var mp = this;
 	var http = Utils.getHttp();
@@ -130,36 +203,40 @@ Engine.prototype.loadKTD = function(url, hasShadow, callback){
 				var type = parseInt(data.substring(0,4));
 				data = data.substring(5);
 				
+				// Reads the first byte and do the corresponding parsing for the data
+				
+				// Ceil colour
 				if (type == 0x00){ Colors.ceil = Colors.parseColor(data); }
-				else if (type == 0x01){ 
+				else if (type == 0x01){ // Floor colour
 					Colors.floor = Colors.parseColor(data);
 					if (hasShadow) Colors.shadowF = Colors.getDark(Colors.floor);
-				}else if (type == 0x02){
+				}else if (type == 0x02){ // Colours of the textures in the package
 					colors = data.split(",");
 					colorsS = new Array(colors.length);
 					for (var j=0,jlen=colors.length;j<jlen;j++){
 						colors[j] = Colors.parseColor(colors[j]);
 						colorsS[j] = Colors.getDark(colors[j]);
 					}
-				}else if (type == 0x03){
+				}else if (type == 0x03){ // Map data
 					var params = data.split(" ");
 					map = mp.parseMap(params);
-				}else if (type == 0x04){
+				}else if (type == 0x04){ // Player data
 					var params = data.split(" ");
 					player.x = parseInt(params[0].trim(), 10);
 					player.y = parseInt(params[1].trim(), 10);
 					player.d = parseFloat(params[2].trim());
-				}else if (type >= 0x10 && type < 0x30){
+				}else if (type >= 0x10 && type < 0x30){ // Textures Data
 					var params = data.split(" ");
 					var tex = mp.parseTexture(params);
 					textures.indexes.push(tex.name);
 					textures[tex.name] = tex;
-				}else if (type >= 0x30){
+				}else if (type >= 0x30){ //Instances data
 					var params = data.split(" ");
 					instances.push(params);
 				}
 			}
 			
+			// Sets the parsed data
 			ktd.ready = true;
 			ktd.player = player;
 			ktd.colors = colors;
@@ -177,6 +254,7 @@ Engine.prototype.loadKTD = function(url, hasShadow, callback){
 	return ktd;
 };
 
+// Creates an image data (inner canvas) and set its alpha to opaque
 Engine.prototype.getData = function(/*vec2*/ size){
 	var data = this.ctx.createImageData(size.a, size.b);
 	for (var i=0,len=data.data.length;i<len;i+=4){
