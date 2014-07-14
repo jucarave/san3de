@@ -1,5 +1,6 @@
 function Game(){
 	this.eng = new Engine(vec2(480,320), Utils.get("divGame"));
+	this.console = new Console(10, '10px "Courier"', this);
 	this.render = new RaycastRender(this.eng.getData(vec2(480,320)), 60, 420, this);
 	this.renderPos = vec2(0,0);
 	
@@ -19,6 +20,11 @@ function Game(){
 	var game = this;
 	this.eng.loadKTD("texBillboards.ktd", false, function(data){ game.parseBillboards(data); });
 	this.eng.loadKTD("testMap.ktd", true, function(data){ game.parseMap(data); });
+	
+	this.console.addMessage("Welcome to SAN3DE Alpha test!", "unique", "white");
+	this.console.addMessage("Press WASD to move, QE to turn around", "unique", "white");
+	this.console.addMessage("Press Enter to interact with doors and objects", "unique", "white");
+	this.console.addMessage("Have fun!", "unique", "yellow");
 }
 
 Game.prototype.getCtx = function(){
@@ -96,6 +102,8 @@ Game.prototype.loopGame = function(deltaT){
 			game.map.loop();
 			game.render.draw(game.getCtx(), game.renderPos);
 		}
+		
+		this.console.render(8, 312);
 		
 		//Debug: Draw the FPS count
 		this.drawFPS(now);
