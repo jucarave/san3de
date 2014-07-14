@@ -2,7 +2,7 @@
 	The engine class handles the canvas, context
 	and load data like Images and Map data
 ===================================================*/
-function Engine(size, container){
+function Engine(/*Vec2*/ size, /*Element*/ container){
 	this.canvas = this.createCanvas(size, container);
 	this.ctx = this.getCtx(this.canvas);
 	
@@ -13,7 +13,7 @@ function Engine(size, container){
 	Creates a canvas and appends it to a html
 	element object.
 ===================================================*/
-Engine.prototype.createCanvas = function(size, container){
+Engine.prototype.createCanvas = function(/*Vec2*/ size, /*Element*/ container){
 	var canvas = document.createElement("canvas");
 	canvas.width = size.a;
 	canvas.height = size.b;
@@ -27,7 +27,7 @@ Engine.prototype.createCanvas = function(size, container){
 	Creates the context of a canvas, setting it
 	width and height
 ===================================================*/
-Engine.prototype.getCtx = function(canvas){
+Engine.prototype.getCtx = function(/*Canvas*/ canvas){
 	var ctx = canvas.getContext("2d");
 	
 	ctx.width = canvas.width;
@@ -40,7 +40,7 @@ Engine.prototype.getCtx = function(canvas){
 	Load an Image from a url and save it in the
 	engine images memory.
 ===================================================*/
-Engine.prototype.loadImage = function(url){
+Engine.prototype.loadImage = function(/*String*/ url){
 	var img = new Image();
 	
 	img.src = url;
@@ -65,7 +65,7 @@ Engine.prototype.loadImage = function(url){
 	Argument[1]: Height
 	Argument[2]: A single line of data separated by commas
 ===================================================*/
-Engine.prototype.parseMap = function(params){
+Engine.prototype.parseMap = function(/*Array*/ params){
 	var width = parseInt(params[0].trim());
 	var height = parseInt(params[1].trim());
 	var map = new Array(height);
@@ -125,7 +125,7 @@ Engine.prototype.parseMap = function(params){
 	Argument[7]: Real image bounding box bottom
 	Argument[8]: Data of the texture (no constraints)
 ===================================================*/
-Engine.prototype.parseTexture = function(params){
+Engine.prototype.parseTexture = function(/*Array*/ params){
 	if (!params) throw "Wrong number of parameters in texture";
 		
 	var name, solid, width, height, offsetL, offsetR, texData, i, offsetT;
@@ -180,7 +180,7 @@ Engine.prototype.parseTexture = function(params){
 	Loads a KTD file from a url, parse all the
 	data and call a callback function if supplied
 ===================================================*/
-Engine.prototype.loadKTD = function(url, hasShadow, callback){
+Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Function*/ callback){
 	var mp = this;
 	var http = Utils.getHttp();
 	var ktd = {ready: false};
@@ -255,7 +255,7 @@ Engine.prototype.loadKTD = function(url, hasShadow, callback){
 };
 
 // Creates an image data (inner canvas) and set its alpha to opaque
-Engine.prototype.getData = function(/*vec2*/ size){
+Engine.prototype.getData = function(/*Vec2*/ size){
 	var data = this.ctx.createImageData(size.a, size.b);
 	for (var i=0,len=data.data.length;i<len;i+=4){
 		data.data[i + 3] = 255;

@@ -46,7 +46,7 @@ function Game(){
 	Starts a new game, reseating all the game 
 	variables to their start status.
 ===================================================*/
-Game.prototype.newGame = function(deltaT){
+Game.prototype.newGame = function(/*float*/ deltaT){
 	var game = this;
 	if (game.textures.indexes && game.billboards.indexes){
 		// If all the data is loaded then start the main loop.
@@ -68,7 +68,7 @@ Game.prototype.getCtx = function(){
 	Check if a key was pressed and set it status
 	to 2 to avoid multiple key binding
 ===================================================*/
-Game.prototype.getKeyPressed = function(keyCode){
+Game.prototype.getKeyPressed = function(/*Int*/ keyCode){
 	if (this.keys[keyCode] == 1){
 		this.keys[keyCode] = 2;
 		return true;
@@ -81,7 +81,7 @@ Game.prototype.getKeyPressed = function(keyCode){
 	Callback function for the billboards, simply
 	store the texture and colours data. 
 ===================================================*/
-Game.prototype.parseBillboards = function(data){
+Game.prototype.parseBillboards = function(/*Object*/ data){
 	this.billboards = data.textures;
 	Colors.billboards = data.colors;
 };
@@ -91,7 +91,7 @@ Game.prototype.parseBillboards = function(data){
 	a new map, store the colours and create the 
 	instances.
 ===================================================*/
-Game.prototype.parseMap = function(data){
+Game.prototype.parseMap = function(/*Object*/ data){
 	var game = this;
 	game.textures = data.textures;
 	game.map = new MapManager(game, data.map, data.player);
@@ -106,7 +106,7 @@ Game.prototype.parseMap = function(data){
 	assigned in ascendant order starting in 1 by 
 	reading the file data.
 ===================================================*/
-Game.prototype.getTexture = function(texId){
+Game.prototype.getTexture = function(/*Int*/ texId){
 	if (texId == 0 || texId === undefined) return null;
 	
 	var ind = this.textures.indexes[texId];
@@ -122,7 +122,7 @@ Game.prototype.getTexture = function(texId){
 	its code, the code are assigned in the file
 	data.
 ===================================================*/
-Game.prototype.getBillboard = function(texCode){
+Game.prototype.getBillboard = function(/*String*/ texCode){
 	// If the texture doesn't exists, then throw an error
 	if (!this.billboards[texCode]) throw "Invalid Billboard Code " + texCode + "!";
 	return this.billboards[texCode];
@@ -133,7 +133,7 @@ Game.prototype.getBillboard = function(texCode){
 	between the number of frames played and the
 	played time.
 ===================================================*/
-Game.prototype.drawFPS = function(now){
+Game.prototype.drawFPS = function(/*float*/ now){
 	var fps = Math.floor((++this.numberFrames) / ((now - this.firstFrame) / 1000));
 	var ctx = this.getCtx();
 	ctx.fillStyle = "white";
@@ -144,7 +144,7 @@ Game.prototype.drawFPS = function(now){
 	Main loop of the game, executes the map and
 	draw all the interface objects like the console.
 ===================================================*/
-Game.prototype.loopGame = function(deltaT){
+Game.prototype.loopGame = function(/*float*/ deltaT){
 	var game = this;
 	
 	var now = Date.now();

@@ -1,4 +1,8 @@
-function MapManager(game, map, player){
+/*===================================================
+	Class that handles the current map data and
+	all the instances located at it.
+===================================================*/
+function MapManager(/*Game*/ game, /*Array*/ map, /*Object*/ player){
 	this.game = game;
 	this.player = null;
 	
@@ -9,7 +13,11 @@ function MapManager(game, map, player){
 	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
 }
 
-MapManager.prototype.isSolid = function(x, y){
+/*===================================================
+	Returns whenever a tile in the map is solid
+	based on its texture.
+===================================================*/
+MapManager.prototype.isSolid = function(/*Int*/ x, /*Int*/ y){
 	if (!this.map[y]) return false;
 	var t = this.map[y][x];
 	
@@ -18,7 +26,11 @@ MapManager.prototype.isSolid = function(x, y){
 	return tex.solid;
 };
 
-MapManager.prototype.isOnTrap = function(position){
+/*===================================================
+	Check if a trap object is at a certain position,
+	if so, makes the player to fell through it
+===================================================*/
+MapManager.prototype.isOnTrap = function(/*Vec2*/ position){
 	var x = (position.a << 0);
 	var y = (position.b << 0);
 	
@@ -30,8 +42,12 @@ MapManager.prototype.isOnTrap = function(position){
 	}
 };
 
-MapManager.prototype.isTextureSolid = function(textureCode){
+/*===================================================
+	Check if a texture is solid by its code.
+===================================================*/
+MapManager.prototype.isTextureSolid = function(/*String*/ textureCode){
 	var tex = this.game.textures[textureCode];
+	// Check if isn't a texture then try to get a billboard
 	if (tex == null)
 		tex = this.game.billboards[textureCode];
 		
@@ -41,13 +57,18 @@ MapManager.prototype.isTextureSolid = function(textureCode){
 	return false;
 };
 
-MapManager.prototype.getInstanceAt = function(x, y){
+/*===================================================
+	Check for instances and doors at a position
+===================================================*/
+MapManager.prototype.getInstanceAt = function(/*Int*/ x, /*Int*/ y){
+	// Look for instances
 	for (var i=0,len=this.instances.length;i<len;i++){
 		var ins = this.instances[i];
 		if ((ins.position.a << 0) == x && (ins.position.b << 0) == y)
 			return ins;
 	}
 	
+	// Look for doors
 	for (var i=0,len=this.doors.length;i<len;i++){
 		var ins = this.doors[i];
 		if ((ins.position.a << 0) == x && (ins.position.b << 0) == y)
@@ -57,7 +78,29 @@ MapManager.prototype.getInstanceAt = function(x, y){
 	return null;
 };
 
-MapManager.prototype.createInstances = function(instances){
+/*===================================================
+	Create the instances, doors and traps of the map 
+	based on a List of Array of parameters
+	
+	List of parameters:
+	Argument[0]: Type of instance 
+		(0: Billboard, 1: Door, 2: Enemy, 3: Trap)
+	Argument[1]: x
+	Argument[2]: y
+	
+	For Billboards:
+	Argument[3]: TextureCode
+	Argument[4-n]: parameters (actions)
+	
+	For Doors:
+	Argument[3]: TextureCode
+	Argument[4]: Direction of the door
+	
+	For Enemies:
+	Argument[3]: direction
+	Argument[4]: TextureCode
+===================================================*/
+MapManager.prototype.createInstances = function(/*Array*/ instances){
 	for (var i=0,len=instances.length;i<len;i++){
 		var ins = instances[i];
 		var type = parseInt(ins[0]);
@@ -72,6 +115,10 @@ MapManager.prototype.createInstances = function(instances){
 	}
 };
 
+/*===================================================
+	Executes the map and all the instances and
+	doors.
+===================================================*/
 MapManager.prototype.loop = function(){
 	this.player.loop();
 	
