@@ -30,7 +30,7 @@ Billboard.prototype.parseParams = function(params){
 			this.visible = false;
 		}else if (p == "tV"){ //Toggle visibility on action
 			this.actionType = p;
-		}else if (p.indexOf("tI") == 0){ //Image Number (Allow animation)
+		}else if (p.indexOf("tI") == 0){ //Move between frames
 			p = p.replace("tI", "");
 			
 			this.actionType = "tI";
@@ -64,7 +64,7 @@ Billboard.prototype.getTexture = function(){
 };
 
 Billboard.prototype.loop = function(){
-	if (this.imgSpd > 0 && this.imgNum > 0){
+	if (this.visible && this.imgSpd > 0 && this.imgNum > 0){
 		this.imgIndex += this.imgSpd;
 		if (this.imgIndex >= this.imgNum) this.imgIndex = 0;
 	}

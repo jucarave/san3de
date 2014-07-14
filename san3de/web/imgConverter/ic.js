@@ -8,7 +8,7 @@ window.addEventListener("load", function(){
 	var img = new Image();
 	img.src = "img/texBulb.png";
 	var offset = 0;
-	var tp = [0,32,13,9];
+	var tp = [0,0,9,12];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		

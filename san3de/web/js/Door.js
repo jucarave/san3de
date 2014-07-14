@@ -26,6 +26,7 @@ Door.prototype.active = function(){
 		this.opening = 1;
 	}else{
 		this.opening = 2;
+		this.solid = true;
 	}
 };
 
@@ -41,7 +42,6 @@ Door.prototype.loop = function(){
 		this.imageIndex -= this.imgSpeed;
 		if (this.imageIndex <= 0){
 			this.opening = 0;
-			this.solid = true;
 			this.imageIndex = 0;
 		}
 	}
