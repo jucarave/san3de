@@ -41,6 +41,10 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.matDist = new Array(this.size.a);
 }
 
+/*===================================================
+	Calculate the int alpha value using the 
+	distance and the setted fog
+===================================================*/
 RaycastRender.prototype.getAlphaByDistance = function(/*float*/ distance){
 	var alpha = 255;
 	if (this.fog != null){

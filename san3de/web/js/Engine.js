@@ -255,7 +255,10 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 	return ktd;
 };
 
-// Creates an image data (inner canvas) and set its alpha to opaque
+/*===================================================
+	Creates an image data (inner canvas) and 
+	set its alpha to opaque
+===================================================*/
 Engine.prototype.getData = function(/*Vec2*/ size){
 	var data = this.ctx.createImageData(size.a, size.b);
 	for (var i=0,len=data.data.length;i<len;i+=4){
