@@ -15,6 +15,7 @@ function Game(){
 	this.eng = new Engine(vec2(480,320), Utils.get("divGame"));
 	this.console = new Console(10, '10px "Courier"', this);
 	this.render = new RaycastRender(this.eng.getData(vec2(480,320)), 60, 420, this);
+	this.render.setFog(1, 10);
 	this.renderPos = vec2(0,0);
 	
 	this.map = null;						// Current Map the player is in

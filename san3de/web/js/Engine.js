@@ -17,7 +17,8 @@ Engine.prototype.createCanvas = function(/*Vec2*/ size, /*Element*/ container){
 	var canvas = document.createElement("canvas");
 	canvas.width = size.a;
 	canvas.height = size.b;
-	
+	canvas.style.backgroundColor = "black";
+		
 	container.appendChild(canvas);
 	
 	return canvas;

@@ -29,6 +29,9 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.lineJ = this.size.a * 4;
 	this.heightR = baseHeight;
 	
+	// Black fog of the canvas
+	this.fog = null;
+	
 	// Variables for when the player is falling in a trap
 	this.falling = false;
 	this.z = 0;
@@ -37,6 +40,27 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	// Array of distances (one per column)
 	this.matDist = new Array(this.size.a);
 }
+
+RaycastRender.prototype.getAlphaByDistance = function(/*float*/ distance){
+	var alpha = 255;
+	if (this.fog != null){
+		if (distance > this.fog.b){
+			alpha = 0;
+		}else if (distance > this.fog.a){
+			var rel = ((distance - this.fog.a) / (this.fog.b - this.fog.a)) * 255;
+			alpha = 255 - rel;
+		}
+	}
+	
+	return (alpha << 0);
+};
+
+/*===================================================
+	Sets the fog minimum and maximum distance
+===================================================*/
+RaycastRender.prototype.setFog = function(start, end){
+	this.fog = vec2(start, end);
+};
 
 /*===================================================
 	If the player is falling through a trap, then
@@ -55,13 +79,15 @@ RaycastRender.prototype.fall = function(){
 	Plot a pixel in the 32Bit Array in the current
 	Endian format.
 ===================================================*/
-RaycastRender.prototype.plot = function(/*Int*/ x, /*Int*/ y, /*Array*/ color){
+RaycastRender.prototype.plot = function(/*Int*/ x, /*Int*/ y, /*Array*/ color, /*Int*/ alpha){
+	if (alpha === null) alpha = 255;
+	
 	if (this.isLittleEndian){
 		// ABGR
-		this.buf32[y * this.size.a + x] = (255 << 24) | (color[2] << 16) | (color[1] << 8) | color[0];
+		this.buf32[y * this.size.a + x] = (alpha << 24) | (color[2] << 16) | (color[1] << 8) | color[0];
 	}else{
 		// RGBA
-		this.buf32[y * this.size.a + x] = (color[0] << 24) | (color[1] << 16) | (color[2] << 8) | 255;
+		this.buf32[y * this.size.a + x] = (color[0] << 24) | (color[1] << 16) | (color[2] << 8) | alpha;
 	}
 };
 
@@ -69,7 +95,7 @@ RaycastRender.prototype.plot = function(/*Int*/ x, /*Int*/ y, /*Array*/ color){
 	Copy a line of a texture into a column of 
 	the renderer
 ===================================================*/
-RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Boolean*/ drawSky){
+RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Int*/ alpha, /*Boolean*/ drawSky){
 	var size = y2 - y1;
 	var back = Colors.ceil;	// Color of the ceil (Later will be the color of the floor)
 	var aC = Colors.alphaC;	// Pixels of this color wont be draw
@@ -89,15 +115,24 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	}else if (y1 < 0){
 		back = Colors.floor;
 	}
+	var hb = this.size.b / 2;
 	
 	var ty, ind, c;
 	for (var i=sy;i<ey;i++){
 		if (i < y1 || i > y2){
+			var alp = 255;
 			// If we are outside the object size, then draw the ceil/floor
-			if (i - this.z > this.size.b) back = Colors.shadowF;
+			if (i - this.z > this.size.b){ 
+				back = Colors.shadowF;
+			}else{
+				if (this.fog != null){
+					if (i < hb){ alp = (hb - i) / hb * 255; }
+					else if (i >= hb){ alp = (i - hb) / hb * 255; }
+				}
+			}
 		
 			draw = true;
-			this.plot(x, i, back);
+			this.plot(x, i, back, alp);
 		}else{
 			// If we are drawing the wall then the next time we will draw the floor
 			back = Colors.floor;
@@ -116,7 +151,7 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
 				
 			draw = true;
-			this.plot(x, i, c);
+			this.plot(x, i, c, alpha);
 		}
 	}
 	
@@ -242,8 +277,10 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var y2 = Math.round(y1 + line);
 		this.matDist[i] = mDist;
 		
+		var alpha = this.getAlphaByDistance(mDist);
+		
 		// Copy the texture data into memory
-		this.fillLine(i,y1,y2,tx,tex,colorH,true);
+		this.fillLine(i,y1,y2,tx,tex,colorH,alpha,true);
 		
 		// Continue to the next ray
 		ang -= this.angVar;
@@ -437,6 +474,8 @@ RaycastRender.prototype.drawDoors = function(instances){
 		dis = (ins.dist1 < ins.dist2)? ins.dist1 : ins.dist2;
 		ss = Math.abs(ins.scale2 - ins.scale1) / (x2 - x1);
 		
+		var alpha = this.getAlphaByDistance(dis);
+		
 		xx = 0;
 		size = x2 - x1;
 		
@@ -460,7 +499,7 @@ RaycastRender.prototype.drawDoors = function(instances){
 				if (tx < 0) tx = 0;
 			
 				// Copy the texture line into the Buffer
-				if (this.fillLine(j,y1,y2,tx,tex,color,false))
+				if (this.fillLine(j,y1,y2,tx,tex,color,alpha,false))
 					this.matDist[j] = dis;
 			}
 		}
@@ -487,6 +526,8 @@ RaycastRender.prototype.drawInstances = function(instances){
 		
 		rel = ins.scale / tex.h;
 		
+		var alpha = this.getAlphaByDistance(ins.dist);
+		
 		// If the instance is outside the view, then don't draw it
 		if (ins.x + ins.scale < 0) continue;
 		else if (ins.x > this.size.a) continue;
@@ -504,7 +545,7 @@ RaycastRender.prototype.drawInstances = function(instances){
 					else tx -= tex.offsetL;
 					
 					// Copy the line of the texture into memory
-					this.fillLine(x,y1,y2,tx,tex,color,false);
+					this.fillLine(x,y1,y2,tx,tex,color,alpha,false);
 				}
 			}
 		}
