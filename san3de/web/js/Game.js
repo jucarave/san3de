@@ -12,9 +12,10 @@
 ===================================================*/
 function Game(){
 	// Constant classes that are working during the execution of the game
-	this.eng = new Engine(vec2(480,320), Utils.get("divGame"));
+	this.gameSize = vec2(480,320);
+	this.eng = new Engine(this.gameSize, Utils.get("divGame"));
 	this.console = new Console(10, '10px "Courier"', this);
-	this.render = new RaycastRender(this.eng.getData(vec2(480,320)), 60, 420, this);
+	this.render = new RaycastRender(this.eng.getData(this.gameSize), 60, 420, this);
 	this.render.setFog(1, 10);
 	this.renderPos = vec2(0,0);
 	
@@ -30,6 +31,8 @@ function Game(){
 	this.keys = new Uint8ClampedArray(255);	// Handle all the keyboard keys status
 	
 	this.lastT = 0;							// Last time a frame was render
+	
+	this.inventory = [];					// General inventory for all the game
 	
 	// Load the map data (this should be somewhere else when the map is actually loaded)
 	var game = this;
@@ -142,6 +145,25 @@ Game.prototype.drawFPS = function(/*float*/ now){
 };
 
 /*===================================================
+	This is a placeholder function, it draws
+	the name of all the current items
+===================================================*/
+Game.prototype.drawInventory = function(){
+	var ctx = this.getCtx();
+	
+	ctx.fillStyle = "white";
+	ctx.textAlign = "right";
+	ctx.font = '10px "Courier"';
+	
+	for (var i=0,len=this.inventory.length;i<len;i++){
+		var item = this.inventory[i];
+		ctx.fillText(item.name, ctx.width - 16, 16 + (i * 10));
+	}
+	
+	ctx.textAlign = "left";
+};
+
+/*===================================================
 	Main loop of the game, executes the map and
 	draw all the interface objects like the console.
 ===================================================*/
@@ -164,6 +186,7 @@ Game.prototype.loopGame = function(/*float*/ deltaT){
 			game.render.draw(game.getCtx(), game.renderPos);
 			
 			this.console.render(8, 312);
+			this.drawInventory();
 		}
 		
 		// Debug: Draw the FPS count

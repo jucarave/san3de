@@ -6,9 +6,9 @@ window.addEventListener("load", function(){
 	var ctx = canvas.getContext("2d");
 	
 	var img = new Image();
-	img.src = "img/texBulb.png";
+	img.src = "img/texKey.png";
 	var offset = 0;
-	var tp = [0,0,9,12];
+	var tp = [0,0,15,6];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
@@ -33,7 +33,7 @@ window.addEventListener("load", function(){
 Color = {
 	colors: ["FF00FF", "FF7F27", "FFC90E", "FFE179", "000000", "161616", "272727",
 	"060606", "121111", "333333", "272F25", "546850", "14120F", "312C23", "443C30",
-	"404E3D","4A4A4A","8A8A8A","FFFFC9"],
+	"404E3D","4A4A4A","8A8A8A","FFFFC9","9C9C9C","D9D9D9","FFFFFF","DFE697","A2AD21","D6E62C"],
 	
 	/*colors: ["4A0E0B","60130F","7D1813","AA211A","4F4F4F","6A6A6A","8F8F8F","A7A7A7","000000","242835","333A4A","4D5873","FF00FF"],*/
 	

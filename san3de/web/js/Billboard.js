@@ -8,6 +8,7 @@ function Billboard(/*Vec2*/ position, /*String*/ textureCode, /*Array*/ params, 
 	this.imgNum = 0;
 	this.visible = true;
 	this.actionType = null;
+	this.inMap = true;
 	
 	this.toggleImg = null;
 	this.toggleImgInd = 0;

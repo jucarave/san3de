@@ -27,10 +27,11 @@
 0x37 0 8 7 texLampB
 0x38 1 11 8 texDoor H
 0x39 1 11 3 texDoor V
-0x38 1 12 11 texDoor H
+0x38 1 12 11 texDoor H L_goldKey
 0x40 2 7 9 90 texEnemy
 0x40 2 6 9 180 texEnemy
-0x41 3 12 3
+0x41 3 12 15
 0x42 0 12 14 texBulb iN2 iS0 tI0_1
 0x42 0 9 14 texBulb iN2 iS0 tI0_1
 0x42 0 5 14 texBulb iN2 iS0 tI0_1
+0x42 4 12 3 texKey aM1 iFgoldKey 

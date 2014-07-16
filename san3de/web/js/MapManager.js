@@ -79,12 +79,68 @@ MapManager.prototype.getInstanceAt = function(/*Int*/ x, /*Int*/ y){
 };
 
 /*===================================================
+	Logs a new message to the main console of
+	the game
+===================================================*/
+MapManager.prototype.logMessage = function(/*String*/ msg, /*String*/ type, /*String*/ color){
+	if (!this.game.console) return;
+	
+	this.game.console.addMessage(msg, type, color);
+};
+
+/*===================================================
+	Attempts to add an item to the inventory
+===================================================*/
+MapManager.prototype.addItem = function(/*ItemFactory*/ item, /*Int*/ amount){
+	var inv = this.game.inventory;
+	
+	for (var i=0;i<amount;i++){
+		this.logMessage("Picked a(n) " + item.name, "pick_" + item.name, "aqua");
+		inv.push(item);
+	}
+};
+
+/*===================================================
+	Returns an item from the inventory if the
+	player has it
+===================================================*/
+MapManager.prototype.getInventoryItem = function(/*String*/ itemCode){
+	var ret = null;
+	var inv = this.game.inventory;
+	
+	for (var i=0,len=inv.length;i<len;i++){
+		if (inv[i].itemCode == itemCode){
+			ret = inv[i];
+			i = len;
+		}
+	}
+	
+	return ret;
+};
+
+/*===================================================
+	Removes a item from the inventory
+===================================================*/
+MapManager.prototype.removeFromInventory = function(/*String*/ itemCode, /*Int*/ amount){
+	var inv = this.game.inventory;
+	
+	for (var i=0,len=inv.length;i<len;i++){
+		if (amount == 0){
+			i = len;
+		}else if (inv[i].itemCode == itemCode){
+			inv.splice(i, 1);
+			amount--;
+		}
+	}
+};
+
+/*===================================================
 	Create the instances, doors and traps of the map 
 	based on a List of Array of parameters
 	
 	List of parameters:
 	Argument[0]: Type of instance 
-		(0: Billboard, 1: Door, 2: Enemy, 3: Trap)
+		(0: Billboard, 1: Door, 2: Enemy, 3: Trap, 4: Item)
 	Argument[1]: x
 	Argument[2]: y
 	
@@ -95,10 +151,15 @@ MapManager.prototype.getInstanceAt = function(/*Int*/ x, /*Int*/ y){
 	For Doors:
 	Argument[3]: TextureCode
 	Argument[4]: Direction of the door
+	Argument[5-n]: parameters
 	
 	For Enemies:
 	Argument[3]: direction
 	Argument[4]: TextureCode
+	
+	For Items:
+	Argument[3]: TextureCode
+	Argument[4-n]: parameters
 ===================================================*/
 MapManager.prototype.createInstances = function(/*Array*/ instances){
 	for (var i=0,len=instances.length;i<len;i++){
@@ -109,9 +170,10 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		var vec = vec2(x + 0.5, y + 0.5);
 		
 		if (type == 0){ this.instances.push(new Billboard(vec, ins[3], ins.splice(4), this)); }
-		else if (type == 1){ this.doors.push(new Door(vec, ins[4], ins[3], this)); }
+		else if (type == 1){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
 		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[3]), ins[4], this)); }
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
+		else if (type == 4){ this.instances.push(new Item(vec, ins[3], ins.splice(4), this)); }
 	}
 };
 
@@ -125,6 +187,12 @@ MapManager.prototype.loop = function(){
 	for (var i=0,len=this.instances.length;i<len;i++){
 		var ins = this.instances[i];
 		if (ins.loop) ins.loop();
+		
+		if (!ins.inMap){
+			this.instances.splice(i, 1);
+			len--;
+			i--;
+		}
 	}
 	
 	for (var i=0,len=this.doors.length;i<len;i++){
