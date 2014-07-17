@@ -1,5 +1,5 @@
 var ItemFactory = {
-	goldKey: {name: "golden key", type: "key"},
+	goldKey: {name: "golden key", type: "key", stackable: true},
 	
 	getItem: function(itemCode){
 		var it = ItemFactory[itemCode];

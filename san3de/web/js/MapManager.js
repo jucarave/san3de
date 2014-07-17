@@ -94,9 +94,27 @@ MapManager.prototype.logMessage = function(/*String*/ msg, /*String*/ type, /*St
 MapManager.prototype.addItem = function(/*ItemFactory*/ item, /*Int*/ amount){
 	var inv = this.game.inventory;
 	
-	for (var i=0;i<amount;i++){
-		this.logMessage("Picked a(n) " + item.name, "pick_" + item.name, "aqua");
-		inv.push(item);
+	if (item.stackable){
+		var added = false;
+		for (var i=0,len=inv.length;i<len;i++){
+			if (inv[i].itemCode == item.itemCode){
+				inv[i].amount += amount;
+				added = true;
+				i = len;
+			}
+		}
+		
+		if (!added){
+			var am = (amount > 1)? amount : "a(n)";
+			this.logMessage("Picked " + am +" " + item.name, "pick_" + item.name, "aqua");
+			item.amount = amount;
+			inv.push(item);
+		}
+	}else{
+		for (var i=0;i<amount;i++){
+			this.logMessage("Picked a(n) " + item.name, "pick_" + item.name, "aqua");
+			inv.push(item);
+		}
 	}
 };
 
@@ -128,8 +146,12 @@ MapManager.prototype.removeFromInventory = function(/*String*/ itemCode, /*Int*/
 		if (amount == 0){
 			i = len;
 		}else if (inv[i].itemCode == itemCode){
-			inv.splice(i, 1);
-			amount--;
+			if (inv[i].amount !== undefined && inv[i].amount > amount){
+				inv[i].amount -= amount;
+			}else{
+				inv.splice(i, 1);
+				amount--;
+			}
 		}
 	}
 };

@@ -157,7 +157,8 @@ Game.prototype.drawInventory = function(){
 	
 	for (var i=0,len=this.inventory.length;i<len;i++){
 		var item = this.inventory[i];
-		ctx.fillText(item.name, ctx.width - 16, 16 + (i * 10));
+		var am = (item.amount)? " x" + item.amount : "";
+		ctx.fillText(item.name + am, ctx.width - 16, 16 + (i * 10));
 	}
 	
 	ctx.textAlign = "left";
