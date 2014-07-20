@@ -303,9 +303,10 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	horizontal position in the screen as well
 	the size and distance of the object
 ===================================================*/
-RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*/ lAng, /*float*/ rAng){
+RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*/ lAng, /*float*/ rAng, /*float*/ dir){
 	// Get the angle between the two objects
 	var angle = Math.getAngle(posA, posB);
+	var angB = Math.abs(dir - angle);
 	
 	// Get the distance from both view extremes to the angle
 	var sl = Math.abs(Math.getShortAngle(angle, lAng));
@@ -330,6 +331,7 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	
 	// Get the distance between the positions
 	var dist = Math.getDistance(posA, posB);
+	dist *= Math.cos(angB);
 	
 	// Get the scale of the object
 	var scale = this.heightR / dist;
@@ -363,7 +365,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		if (xx > 10 || yy > 10) continue;
 			
 		// Cast a ray to the object
-		var ray = this.castTo(position, ins.position, lAng, rAng);
+		var ray = this.castTo(position, ins.position, lAng, rAng, direction);
 		if (!ray) continue;
 		
 		// Center the object in its position
@@ -408,17 +410,18 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		var xx = Math.abs(ins.position.a - position.a);
 		var yy = Math.abs(ins.position.b - position.b);
 		
-		// If it's too far, don't draw it
+		// If it's too far or too near, don't draw it
 		if (xx > 10 || yy > 10) continue;
+		if (xx < 0.5 && yy < 0.5) continue;
 		
 		// Cast a ray to the left extreme of the door
 		pos = (ins.direction == "H")? vec2((ins.position.a << 0), ins.position.b) : vec2(ins.position.a, (ins.position.b << 0));
-		var ray1 = this.castTo(position, pos, lAng, rAng);
+		var ray1 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray1) continue;
 		
 		// Cast a ray to the right extreme of the door
 		pos = (ins.direction == "H")? vec2((1 + ins.position.a) << 0, ins.position.b) : vec2(ins.position.a, (1 + ins.position.b) << 0);
-		var ray2 = this.castTo(position, pos, lAng, rAng);
+		var ray2 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray2) continue;
 		
 		var sorI = {ins: ins, scale1: ray1.scale, dist1: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x};

@@ -10,6 +10,7 @@ function Door(position, direction, texture, params, mapManager){
 	this.opening = 0;
 	
 	this.locked = null;
+	this.openable = true;
 	
 	this.parseParams(params);
 }
@@ -17,12 +18,15 @@ function Door(position, direction, texture, params, mapManager){
 Door.prototype.parseParams = function(params){
 	for (var i=0,len=params.length;i<len;i++){
 		var p = params[i];
-		if (p.indexOf("L_") == 0){ this.locked = p.replace("L_", ""); }
+		if (p.indexOf("L_") == 0){ this.locked = p.replace("L_", ""); }else
+		if (p == "nOp"){ this.openable = false; }
 	}
 };
 
 Door.prototype.getTexture = function(){
-	var img = Math.floor(this.imageIndex) + "";
+	var img = "";
+	if (this.openable)
+		img = Math.floor(this.imageIndex) + "";
 	return this.texture + img;
 };
 
@@ -31,6 +35,7 @@ Door.prototype.isSolid = function(){
 };
 
 Door.prototype.active = function(){
+	if (!this.openable) return;
 	if (this.opening != 0) return;
 	
 	if (this.locked != null){
@@ -57,10 +62,10 @@ Door.prototype.active = function(){
 Door.prototype.loop = function(){
 	if (this.opening == 1){
 		this.imageIndex += this.imgSpeed;
-		if (this.imageIndex >= 3){
+		if (this.imageIndex >= 4){
 			this.opening = 0;
 			this.solid = false;
-			this.imageIndex = 2;
+			this.imageIndex = 3;
 		}
 	}else if (this.opening == 2){
 		this.imageIndex -= this.imgSpeed;
