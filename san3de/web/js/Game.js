@@ -36,7 +36,7 @@ function Game(){
 	
 	// Load the map data (this should be somewhere else when the map is actually loaded)
 	var game = this;
-	this.eng.loadKTD("texBillboards.ktd", false, function(data){ game.parseBillboards(data); });
+	this.eng.loadKTD("kramBillboards.ktd", false, function(data){ game.parseBillboards(data); });
 	this.eng.loadKTD("kramBuild.ktd", true, function(data){ game.parseMap(data); });
 	
 	// Shows a welcome message with the game instructions.

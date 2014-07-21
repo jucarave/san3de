@@ -107,7 +107,9 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	
 	var sy = 0;				// First vertical position of the renderer
 	var ey = this.size.b;	// It can't go beyond the size of the renderer
-	var draw = false;		// Was this line drew?	
+	var draw = false;		// Was this line drew?
+	var drawL = 0;			// Drawed pixels
+	var skipL = 0;			// Skiped pixels
 	
 	if (y2 > ey) y2 = ey;
 	
@@ -135,7 +137,7 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 				}
 			}
 		
-			draw = true;
+			drawL++;
 			this.plot(x, i, back, alp);
 		}else{
 			// If we are drawing the wall then the next time we will draw the floor
@@ -143,7 +145,10 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 			
 			// Get the vertical position of the texture
 			ty = ((i - y1) / size * (texture.height - 1)) << 0;
-			if (ty < texture.offsetT || ty >= texture.offsetB) continue;
+			if (ty < texture.offsetT || ty >= texture.offsetB){
+				skipL++; 
+				continue;
+			}
 			ty -= texture.offsetT;
 			
 			// Calculate the index of the texture to get its color
@@ -152,13 +157,17 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 			
 			// If there is no color, then throw an error
 			if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
-			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]) continue;
+			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]){
+				skipL++; 
+				continue; 
+			}
 				
-			draw = true;
+			drawL++;
 			this.plot(x, i, c, alpha);
 		}
 	}
 	
+	draw = (drawL > skipL);
 	return draw;
 };
 
@@ -291,8 +300,11 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	}
 	
 	// Call the other castings
-	this.doorCasting(p, d, mapManager.doors);
-	this.objectCasting(p, d, mapManager.instances);
+	var doors  = this.doorCasting(p, d, mapManager.doors);
+	var instances = this.objectCasting(p, d, mapManager.instances);
+	
+	// Order and draw the instances
+	this.renderInstances(instances, doors);
 	
 	// Copy the 8Bit buffer into the 8Bit data
 	this.canvas.data.set(this.buf8);
@@ -370,7 +382,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		
 		// Center the object in its position
 		ray.x = Math.round(ray.x - ray.scale / 2);
-		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle};
+		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle, type: 0};
 		var added = false;
 		
 		// Find if there is a near distance, then put it behind
@@ -388,8 +400,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		}
 	}
 	
-	// Draw the instances in the view
-	this.drawInstances(sortedIns);
+	return sortedIns;
 };
 
 /*===================================================
@@ -424,12 +435,12 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		var ray2 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray2) continue;
 		
-		var sorI = {ins: ins, scale1: ray1.scale, dist1: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x};
+		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1};
 		var added = false;
 		
 		// Check if there is any near door, then put it behind
 		for (var j=0,jlen=sortedIns.length;j<jlen;j++){
-			if (ray1.dist > sortedIns[j].dist1){
+			if (ray1.dist > sortedIns[j].dist){
 				sortedIns.splice(j,0,sorI);
 				j = jlen;
 				added = true;
@@ -442,73 +453,68 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		}
 	}
 	
-	// Draw the doors in the view
-	this.drawDoors(sortedIns);
+	return sortedIns;
 };
 
 /*===================================================
 	Draw all the doors that are on the field
 	of vision.
 ===================================================*/
-RaycastRender.prototype.drawDoors = function(instances){
+RaycastRender.prototype.drawDoor = function(ins){
 	var hv = (this.size.b / 2);
 	// Variables for position, texture position, and scale of the door.
 	var xx, x1, x2, y1, y2, d, s, ss, dis, size, sc, tex, tx, color, j, ins, ol ,or, rel, texScale;
 	color = Colors.textures;
-	for (var i=0,len=instances.length;i<len;i++){
-		ins = instances[i];
-		tex = this.game.textures[ins.ins.getTexture()];
-		
-		// Depending on the direction we are watching the door, we invert its values
-		if (ins.x1 < ins.x2){
-			x1 = ins.x1;
-			x2 = ins.x2;
-			d = (ins.scale1 < ins.scale2)? 1 : -1;
-			s = ins.scale1;
-			texScale = 1;
-		}else{
-			x1 = ins.x2;
-			x2 = ins.x1;
-			d = (ins.scale1 < ins.scale2)? -1 : 1;
-			s = ins.scale2;
-			texScale = -1;
-		}
-		
-		// If the door is outside the screen, then don't draw it
-		if ((x1 < 0 && x2 < 0) || (x1 > this.size.a && x2 > this.size.a)) continue;
-		
-		// Get the scale variance between horizontal pixels
-		dis = (ins.dist1 < ins.dist2)? ins.dist1 : ins.dist2;
-		ss = Math.abs(ins.scale2 - ins.scale1) / (x2 - x1);
-		
-		var alpha = this.getAlphaByDistance(dis);
-		
-		xx = 0;
-		size = x2 - x1;
-		
-		if (x1 < 0){ 
-			xx = -x1; 
-			x1 = 0;
-		}
-		if (x2 > this.size.a) x2 = this.size.a;
-		
-		for (j=x1;j<x2;j++){
-			xx++;
-			if (dis <= this.matDist[j]){
-				sc = s + (ss * xx * d);
-				// Get the vertical position of this line
-				y1 = Math.round(hv - sc / 2);
-				y2 = Math.round(y1 + sc);
-				
-				// Get the texture line
-				tx = ((xx / size) * tex.width) << 0;
-				if (texScale == -1) tx = tex.width - tx - 1;
-				if (tx < 0) tx = 0;
+	tex = this.game.textures[ins.ins.getTexture()];
+	
+	// Depending on the direction we are watching the door, we invert its values
+	if (ins.x1 < ins.x2){
+		x1 = ins.x1;
+		x2 = ins.x2;
+		d = (ins.scale1 < ins.scale2)? 1 : -1;
+		s = ins.scale1;
+		texScale = 1;
+	}else{
+		x1 = ins.x2;
+		x2 = ins.x1;
+		d = (ins.scale1 < ins.scale2)? -1 : 1;
+		s = ins.scale2;
+		texScale = -1;
+	}
+	
+	// If the door is outside the screen, then don't draw it
+	if ((x1 < 0 && x2 < 0) || (x1 > this.size.a && x2 > this.size.a)) return;
+	
+	// Get the scale variance between horizontal pixels
+	dis = (ins.dist < ins.dist2)? ins.dist : ins.dist2;
+	ss = Math.abs(ins.scale2 - ins.scale1) / (x2 - x1);
+	
+	var alpha = this.getAlphaByDistance(dis);
+	
+	xx = 0;
+	size = x2 - x1;
+	
+	if (x1 < 0){ 
+		xx = -x1; 
+		x1 = 0;
+	}
+	if (x2 > this.size.a) x2 = this.size.a;
+	
+	for (j=x1;j<x2;j++){
+		xx++;
+		if (dis <= this.matDist[j]){
+			sc = s + (ss * xx * d);
+			// Get the vertical position of this line
+			y1 = Math.round(hv - sc / 2);
+			y2 = Math.round(y1 + sc);
 			
-				// Copy the texture line into the Buffer
-				if (this.fillLine(j,y1,y2,tx,tex,color,alpha,false))
-					this.matDist[j] = dis;
-			}
+			// Get the texture line
+			tx = ((xx / size) * tex.width) << 0;
+			if (texScale == -1) tx = tex.width - tx - 1;
+			if (tx < 0) tx = 0;
+		
+			// Copy the texture line into the Buffer
+			this.fillLine(j,y1,y2,tx,tex,color,alpha,false);
 		}
 	}
 };
@@ -517,45 +523,68 @@ RaycastRender.prototype.drawDoors = function(instances){
 	Draw all the instances that are in the field
 	of vision
 ===================================================*/
-RaycastRender.prototype.drawInstances = function(instances){
+RaycastRender.prototype.drawInstance = function(ins){
 	// Variables for getting the position, texture, and color of the instance
 	var ins, y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
-	for (var i=0,len=instances.length;i<len;i++){
-		ins = instances[i];
 		
-		y1 = Math.round((this.size.b / 2) - ins.scale / 2);
-		y2 = Math.round(y1 + ins.scale);
+	y1 = Math.round((this.size.b / 2) - ins.scale / 2);
+	y2 = Math.round(y1 + ins.scale);
+	
+	// Get the texture of the instance
+	texInfo = ins.ins.getTexture(ins.angle);
+	tex = this.game.getBillboard(texInfo.texCode);
+	color = Colors.billboards;
+	
+	rel = ins.scale / tex.h;
+	
+	var alpha = this.getAlphaByDistance(ins.dist);
+	
+	// If the instance is outside the view, then don't draw it
+	if (ins.x + ins.scale < 0) return;
+	else if (ins.x > this.size.a) return;
+	
+	for (j=0;j<ins.scale;j++){
+		x = ins.x + j;
 		
-		// Get the texture of the instance
-		texInfo = ins.ins.getTexture(ins.angle);
-		tex = this.game.getBillboard(texInfo.texCode);
-		color = Colors.billboards;
-		
-		rel = ins.scale / tex.h;
-		
-		var alpha = this.getAlphaByDistance(ins.dist);
-		
-		// If the instance is outside the view, then don't draw it
-		if (ins.x + ins.scale < 0) continue;
-		else if (ins.x > this.size.a) continue;
-		
-		for (j=0;j<ins.scale;j++){
-			x = ins.x + j;
-			
-			if (x > 0 && x < this.size.a){
-				if (ins.dist < this.matDist[x]){
-					tx = (j / ins.scale * tex.width) << 0;
-					
-					// Adjust the texture with the scale of the object
-					if (tx < tex.offsetL || tx >= tex.offsetR) continue;
-					if (texInfo.xScale == -1) tx = tex.width - tx - tex.invOffR;
-					else tx -= tex.offsetL;
-					
-					// Copy the line of the texture into memory
-					this.fillLine(x,y1,y2,tx,tex,color,alpha,false);
-				}
+		if (x > 0 && x < this.size.a){
+			if (ins.dist < this.matDist[x]){
+				tx = (j / ins.scale * tex.width) << 0;
+				
+				// Adjust the texture with the scale of the object
+				if (tx < tex.offsetL || tx >= tex.offsetR) continue;
+				if (texInfo.xScale == -1) tx = tex.width - tx - tex.invOffR;
+				else tx -= tex.offsetL;
+				
+				// Copy the line of the texture into memory
+				this.fillLine(x,y1,y2,tx,tex,color,alpha,false);
 			}
 		}
+	}
+};
+/*===================================================
+	Order all the doors and instances and then
+	draw them
+===================================================*/
+RaycastRender.prototype.renderInstances = function(instances, doors){
+	// Order the instances and doors by distance
+	for (var i=0,len=doors.length;i<len;i++){
+		var added = false;
+		for (var j=0,jlen=instances.length;j<jlen;j++){
+			if (doors[i].dist > instances[j].dist){
+				instances.splice(j,0,doors[i]);
+				added = true;
+				j = jlen;
+			}
+		}
+		
+		if (!added){ instances.push(doors[i]); }
+	}
+	
+	// Draw the orderer instances according to their type
+	for (var i=0,len=instances.length;i<len;i++){
+		var ins = instances[i];
+		if (ins.type == 0){ this.drawInstance(ins); }else 
+		if (ins.type == 1){ this.drawDoor(ins); }
 	}
 };
 

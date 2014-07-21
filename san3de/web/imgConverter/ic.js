@@ -6,9 +6,9 @@ window.addEventListener("load", function(){
 	var ctx = canvas.getContext("2d");
 	
 	var img = new Image();
-	img.src = "img/texWall5.png";
+	img.src = "img/texture.png";
 	var offset = 0;
-	var tp = [0,0,64,64];
+	var tp = [0,0,14,13];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
@@ -31,7 +31,8 @@ window.addEventListener("load", function(){
 });
 
 Color = {
-	colors: ["1D202B","08090D","030405","11131A","292D3D","383D54","2F2F36","6B6B6B","A8A8A8","FF00FF","332609","573D00","785607"],
+	colors: [],
+	/*colors: ["1D202B","08090D","030405","11131A","292D3D","383D54","2F2F36","6B6B6B","A8A8A8","FF00FF","332609","573D00","785607"],*/
 	
 	/*colors: ["FF00FF", "FF7F27", "FFC90E", "FFE179", "000000", "161616", "272727",
 	"060606", "121111", "333333", "272F25", "546850", "14120F", "312C23", "443C30",

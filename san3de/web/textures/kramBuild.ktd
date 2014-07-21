@@ -21,3 +21,4 @@
 0x33 1 7 6 texDoorWall H nOp
 0x33 1 8 6 texDoor H
 0x33 1 9 6 texDoorWall H nOp
+0x34 0 3 1 texRecipient
