@@ -525,7 +525,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 ===================================================*/
 RaycastRender.prototype.drawInstance = function(ins){
 	// Variables for getting the position, texture, and color of the instance
-	var ins, y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
+	var y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
 		
 	y1 = Math.round((this.size.b / 2) - ins.scale / 2);
 	y2 = Math.round(y1 + ins.scale);
@@ -583,6 +583,7 @@ RaycastRender.prototype.renderInstances = function(instances, doors){
 	// Draw the orderer instances according to their type
 	for (var i=0,len=instances.length;i<len;i++){
 		var ins = instances[i];
+		if (ins.dist > 15 || ins.dist < 0.01) continue;
 		if (ins.type == 0){ this.drawInstance(ins); }else 
 		if (ins.type == 1){ this.drawDoor(ins); }
 	}

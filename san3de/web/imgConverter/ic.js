@@ -6,9 +6,9 @@ window.addEventListener("load", function(){
 	var ctx = canvas.getContext("2d");
 	
 	var img = new Image();
-	img.src = "img/texture.png";
+	img.src = "img/texWall5.png";
 	var offset = 0;
-	var tp = [0,0,26,13];
+	var tp = [0,0,64,64];
 	img.addEventListener("load", function(){
 		ctx.drawImage(img,tp[0],tp[1],tp[2],tp[3],0,0,tp[2],tp[3]);
 		
@@ -31,8 +31,8 @@ window.addEventListener("load", function(){
 });
 
 Color = {
-	colors: ["211B11","6E5120","8F6A29","9C7D49","4D3F28","FF00FF","080808","141414","383838","B7C400","A5A86C"],
-	/*colors: ["1D202B","08090D","030405","11131A","292D3D","383D54","2F2F36","6B6B6B","A8A8A8","FF00FF","332609","573D00","785607"],*/
+	/*colors: ["211B11","6E5120","8F6A29","9C7D49","4D3F28","FF00FF","080808","141414","383838","B7C400","A5A86C"],*/
+	colors: ["1D202B","08090D","030405","11131A","292D3D","383D54","2F2F36","6B6B6B","A8A8A8","FF00FF","332609","573D00","785607","4D4D4D","000000","1C1403"],
 	
 	/*colors: ["FF00FF", "FF7F27", "FFC90E", "FFE179", "000000", "161616", "272727",
 	"060606", "121111", "333333", "272F25", "546850", "14120F", "312C23", "443C30",
