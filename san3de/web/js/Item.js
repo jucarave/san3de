@@ -6,7 +6,7 @@ function Item(/*Vec2*/ position, /*String*/ textureCode, /*Array*/ params, /*Map
 	this.imgIndex = 0;
 	this.imgSpd = 0;
 	this.imgNum = 0;
-	this.visible = true;
+	this.visible = (textureCode != "none");
 	
 	this.amount = 0;
 	this.item = null;
@@ -45,6 +45,7 @@ Item.prototype.isSolid = function(){
 
 Item.prototype.getTexture = function(){
 	var tex = this.textureCode;
+	
 	if (this.imgNum > 0)
 		tex += (this.imgIndex << 0);
 	return {texCode: tex, xScale: 1};

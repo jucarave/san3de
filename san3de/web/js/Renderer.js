@@ -532,6 +532,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 	
 	// Get the texture of the instance
 	texInfo = ins.ins.getTexture(ins.angle);
+	if (texInfo.texCode == "none") return;
 	tex = this.game.getBillboard(texInfo.texCode);
 	color = Colors.billboards;
 	
@@ -540,6 +541,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 	var alpha = this.getAlphaByDistance(ins.dist);
 	
 	// If the instance is outside the view, then don't draw it
+	if (Math.abs(ins.scale) >= 1000) return;
 	if (ins.x + ins.scale < 0) return;
 	else if (ins.x > this.size.a) return;
 	

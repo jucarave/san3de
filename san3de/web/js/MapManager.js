@@ -89,6 +89,13 @@ MapManager.prototype.logMessage = function(/*String*/ msg, /*String*/ type, /*St
 };
 
 /*===================================================
+	Changes the texture of a wall
+===================================================*/
+MapManager.prototype.changeWall = function(/*Int*/ x, /*Int*/ y, /*Int*/ texNumber){
+	this.map[y][x] = texNumber;
+};
+
+/*===================================================
 	Attempts to add an item to the inventory
 ===================================================*/
 MapManager.prototype.addItem = function(/*ItemFactory*/ item, /*Int*/ amount){
