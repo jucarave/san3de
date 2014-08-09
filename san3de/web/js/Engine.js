@@ -267,3 +267,14 @@ Engine.prototype.getData = function(/*Vec2*/ size){
 	
 	return data;
 };
+
+/*===================================================
+	Check if all the images are loaded
+===================================================*/
+Engine.prototype.areImagesReady = function(){
+	for (var i=0,len=this.images.length;i<len;i++){
+		if (!this.images[i].ready) return false;
+	}
+	
+	return true;
+};

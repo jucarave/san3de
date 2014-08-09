@@ -203,6 +203,7 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[3]), ins[4], this)); }
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
 		else if (type == 4){ this.instances.push(new Item(vec, ins[3], ins.splice(4), this)); }
+		else if (type == 5){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
 	}
 };
 

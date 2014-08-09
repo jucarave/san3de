@@ -185,6 +185,9 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var last = 0;							// Orientation of the last Ray (1: Horizontal, 2: Vertical)
 	var lastTex = null;						// Last texture that was draw
 	
+	var sizeH = this.size.b / 2;
+	var floorText = this.game.getTexture(5);
+	
 	for (var i=0;i<this.size.a;i++){
 		var vAng = vec2(Math.cos(ang), -Math.sin(ang));	// Orientation of the casted angle
 		var rayA = p.clone();							// Position of the horizontal ray
@@ -200,6 +203,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var wx, wy;										// Map x, y
 		var line = 0;									// Size of the wall
 		var angB = Math.abs(d - ang);					// Beta angle (to correct the eyefish)
+		var cosB = Math.cos(angB);						// Cosine of the beta angle (used mostly in floorCasting)
 		var tex, texA, texB;							// Horizontal, Vertical and found texture
 		var tx;											// Horizontal position in the texture
 		var colorH = null;								// Determines if the colors are normal or shadowed
@@ -282,7 +286,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		lastTex = texA;
 		
 		// Solve the eyefish effect
-		mDist *= Math.cos(angB);
+		mDist *= cosB;
 		
 		// Calculate the height of the wall
 		line = this.heightR / mDist;
@@ -293,7 +297,31 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var alpha = this.getAlphaByDistance(mDist);
 		
 		// Copy the texture data into memory
-		this.fillLine(i,y1,y2,tx,tex,colorH,alpha,true);
+		this.fillLine(i,y1,y2,tx,tex,colorH,alpha,false);
+		
+		for (var f=y2;f<this.size.b;f++){
+			var f2 = sizeH - (f - sizeH); 
+			
+			var py = Math.abs(sizeH - f);
+			var floorD = (90 / py) / cosB;
+			var fx = (p.a + vAng.a * floorD);
+			var fy = (p.b + vAng.b * floorD);
+			tx = (fx * floorText.width % floorText.width) << 0;
+			var ty = (fy * floorText.height % floorText.height) << 0;
+			var ind = tx + (ty * floorText.innerW);
+			var c = Colors.textures[floorText.texData[ind]];
+			
+			if (c){
+				var alp = 255;
+				if (this.fog != null){
+					if (f < sizeH){ alp = (sizeH - f) / sizeH * 255; }
+					else if (f >= sizeH){ alp = (f - sizeH) / sizeH * 255; }
+				}
+			
+				this.plot(i, f, c, alp);
+				this.plot(i, f2, c, alp);
+			}
+		}
 		
 		// Continue to the next ray
 		ang -= this.angVar;
@@ -426,12 +454,12 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		if (xx < 0.5 && yy < 0.5) continue;
 		
 		// Cast a ray to the left extreme of the door
-		pos = (ins.direction == "H")? vec2((ins.position.a << 0), ins.position.b) : vec2(ins.position.a, (ins.position.b << 0));
+		pos = ins.leftPos;
 		var ray1 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray1) continue;
 		
 		// Cast a ray to the right extreme of the door
-		pos = (ins.direction == "H")? vec2((1 + ins.position.a) << 0, ins.position.b) : vec2(ins.position.a, (1 + ins.position.b) << 0);
+		pos = ins.rightPos;
 		var ray2 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray2) continue;
 		

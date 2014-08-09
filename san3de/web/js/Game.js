@@ -12,14 +12,15 @@
 ===================================================*/
 function Game(){
 	// Constant classes that are working during the execution of the game
-	this.gameSize = vec2(480,320);
+	this.gameSize = vec2(320,200);
 	this.eng = new Engine(this.gameSize, Utils.get("divGame"));
 	this.console = new Console(10, '10px "Courier"', this);
-	this.render = new RaycastRender(this.eng.getData(this.gameSize), 60, 420, this);
+	this.render = new RaycastRender(this.eng.getData(vec2(208,127)), 60, 180, this);
 	this.render.setFog(1, 10);
-	this.renderPos = vec2(0,0);
+	this.renderPos = vec2(16,17);
 	
 	this.map = null;						// Current Map the player is in
+	this.scene = null;						// Scene to render
 	this.fps = Math.floor(1000 / 30);		// Base speed the game runs
 	
 	// Debug variables for showing the FPS count
@@ -34,10 +35,12 @@ function Game(){
 	
 	this.inventory = [];					// General inventory for all the game
 	
+	this.images = {};						// Non "3D" Images used in the game
+	
 	// Load the map data (this should be somewhere else when the map is actually loaded)
 	var game = this;
+	this.loadImages();
 	this.eng.loadKTD("kramBillboards.ktd", false, function(data){ game.parseBillboards(data); });
-	this.eng.loadKTD("kramBuild.ktd", true, function(data){ game.parseMap(data); });
 	
 	// Shows a welcome message with the game instructions.
 	this.console.addMessage("Welcome to SAN3DE Alpha test!", "unique", "white");
@@ -47,13 +50,23 @@ function Game(){
 }
 
 /*===================================================
+	Loads all the interface and non 3D images
+	used during the game
+===================================================*/
+Game.prototype.loadImages = function(){
+	this.images.titleS = this.eng.loadImage("img/titleScreen.png");
+	this.images.viewport = this.eng.loadImage("img/viewport.png");
+};
+
+/*===================================================
 	Starts a new game, reseating all the game 
 	variables to their start status.
 ===================================================*/
 Game.prototype.newGame = function(/*float*/ deltaT){
 	var game = this;
-	if (game.textures.indexes && game.billboards.indexes){
+	if (game.eng.areImagesReady()){
 		// If all the data is loaded then start the main loop.
+		game.scene = new TitleScreen(game);
 		game.loopGame(deltaT);
 	}else{
 		// Keep looping this function until all the texture data are ready.
@@ -103,6 +116,14 @@ Game.prototype.parseMap = function(/*Object*/ data){
 	
 	Colors.textures = data.colors;
 	Colors.texturesShadow = data.colorsS;
+};
+
+/*===================================================
+	Loads a new map
+===================================================*/
+Game.prototype.loadMap = function(/*String*/ mapId){
+	var game = this;
+	this.eng.loadKTD(mapId, true, function(data){ game.parseMap(data); });
 };
 
 /*===================================================
@@ -178,16 +199,20 @@ Game.prototype.loopGame = function(/*float*/ deltaT){
 	if (dT > this.fps){
 		game.lastT = now - (dT % this.fps);
 		
-		// If there is a map being played execute it.
-		if (game.map){
+		if (game.scene){ // If there is a scene being played
+			game.scene.loop();
+		}else if (game.map){ // If there is a map being played execute it.
 			game.render.raycast(game.map);
 			game.render.fall();
 		
 			game.map.loop();
 			game.render.draw(game.getCtx(), game.renderPos);
 			
-			this.console.render(8, 312);
-			this.drawInventory();
+			/*this.console.render(8, 192);
+			this.drawInventory();*/
+			
+			var ctx = game.getCtx();
+			ctx.drawImage(game.images.viewport, 0, 0);
 		}
 		
 		// Debug: Draw the FPS count

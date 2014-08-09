@@ -13,6 +13,29 @@ function Door(position, direction, texture, params, mapManager){
 	this.openable = true;
 	
 	this.parseParams(params);
+	
+	this.leftPos = null;
+	this.rightPos = null;
+	
+	if (direction == "H"){
+		this.leftPos = vec2((position.a << 0), position.b);
+		this.rightPos = vec2((1 + position.a << 0), position.b);
+	}else if (direction == "V"){
+		this.leftPos = vec2(position.a, (position.b << 0));
+		this.rightPos = vec2(position.a, (1 + position.b << 0));
+	}else if (direction == "UR"){
+		this.leftPos = vec2((position.a << 0), (position.b << 0));
+		this.rightPos = vec2((1 + position.a << 0), (1 + position.b << 0));
+	}else if (direction == "DR"){
+		this.leftPos = vec2((1 + position.a << 0), (position.b << 0));
+		this.rightPos = vec2((position.a << 0), (1 + position.b << 0));
+	}else if (direction == "UL"){
+		this.leftPos = vec2((position.a << 0), (1 + position.b << 0));
+		this.rightPos = vec2((1 + position.a << 0), (position.b << 0));
+	}else if (direction == "DL"){
+		this.leftPos = vec2((1 + position.a << 0), (1 + position.b << 0));
+		this.rightPos = vec2((position.a << 0), (position.b << 0));
+	}
 }
 
 Door.prototype.parseParams = function(params){

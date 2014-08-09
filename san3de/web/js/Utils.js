@@ -123,3 +123,14 @@ window.requestAnimFrame =
 	function(/* function */ draw1){
 		window.setTimeout(draw1, 1000 / 30);
 	};
+	
+/*===================================================
+	Sets the game in fullscreen
+===================================================*/
+function requestFullscreen(/*Canvas*/ canvas){
+	if(canvas.webkitRequestFullScreen) {
+		canvas.webkitRequestFullScreen();
+	}else{
+		canvas.mozRequestFullScreen();
+	}            
+}
