@@ -10,6 +10,8 @@ function MapManager(/*Game*/ game, /*Array*/ map, /*Object*/ player){
 	this.doors = [];
 	this.traps = [];
 	this.map = map;
+	this.floor = null;
+	this.ceil = null;
 	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
 }
 

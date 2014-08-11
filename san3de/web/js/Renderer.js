@@ -34,7 +34,8 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	
 	// Variables for when the player is falling in a trap
 	this.falling = false;
-	this.z = 0;
+	this.z = (this.size.b / 2) << 0;
+	this.zAngle = 0;
 	this.vspeed = 0;
 	
 	// Array of distances (one per column)
@@ -99,9 +100,8 @@ RaycastRender.prototype.plot = function(/*Int*/ x, /*Int*/ y, /*Array*/ color, /
 	Copy a line of a texture into a column of 
 	the renderer
 ===================================================*/
-RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Int*/ alpha, /*Boolean*/ drawSky){
+RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Int*/ alpha){
 	var size = y2 - y1;
-	var back = Colors.ceil;	// Color of the ceil (Later will be the color of the floor)
 	var aC = Colors.alphaC;	// Pixels of this color wont be draw
 	tx = (tx) << 0;
 	
@@ -113,58 +113,33 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	
 	if (y2 > ey) y2 = ey;
 	
-	y1 += this.z;
-	y2 += this.z;
-	if (!drawSky){
-		if (y1 > 0) sy = y1;
-		if (y2 < ey) ey = y2;
-	}else if (y1 < 0){
-		back = Colors.floor;
-	}
+	if (y1 > 0) sy = y1;
+	if (y2 < ey) ey = y2;
 	var hb = this.size.b / 2;
 	
 	var ty, ind, c;
 	for (var i=sy;i<ey;i++){
-		if (i < y1 || i > y2){
-			var alp = 255;
-			// If we are outside the object size, then draw the ceil/floor
-			if (i - this.z > this.size.b){ 
-				back = Colors.shadowF;
-			}else{
-				if (this.fog != null){
-					if (i < hb){ alp = (hb - i) / hb * 255; }
-					else if (i >= hb){ alp = (i - hb) / hb * 255; }
-				}
-			}
-		
-			drawL++;
-			this.plot(x, i, back, alp);
-		}else{
-			// If we are drawing the wall then the next time we will draw the floor
-			back = Colors.floor;
-			
-			// Get the vertical position of the texture
-			ty = ((i - y1) / size * (texture.height - 1)) << 0;
-			if (ty < texture.offsetT || ty >= texture.offsetB){
-				skipL++; 
-				continue;
-			}
-			ty -= texture.offsetT;
-			
-			// Calculate the index of the texture to get its color
-			ind = tx + (ty * texture.innerW);
-			c = colorHolder[texture.texData[ind]];
-			
-			// If there is no color, then throw an error
-			if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
-			if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]){
-				skipL++; 
-				continue; 
-			}
-				
-			drawL++;
-			this.plot(x, i, c, alpha);
+		// Get the vertical position of the texture
+		ty = ((i - y1) / size * (texture.height - 1)) << 0;
+		if (ty < texture.offsetT || ty >= texture.offsetB){
+			skipL++; 
+			continue;
 		}
+		ty -= texture.offsetT;
+		
+		// Calculate the index of the texture to get its color
+		ind = tx + (ty * texture.innerW);
+		c = colorHolder[texture.texData[ind]];
+		
+		// If there is no color, then throw an error
+		if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
+		if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]){
+			skipL++; 
+			continue; 
+		}
+			
+		drawL++;
+		this.plot(x, i, c, alpha);
 	}
 	
 	draw = (drawL > skipL);
@@ -178,6 +153,8 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 ===================================================*/
 RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var map = mapManager.map;				// Map Data
+	var floor = mapManager.floor;			// Floor tiles
+	var ceil = mapManager.ceil;				// Ceil tiles
 	var p = mapManager.player.position;		// Position of the player
 	var d = mapManager.player.direction;	// Direction (Radians) of the player
 	
@@ -185,8 +162,11 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var last = 0;							// Orientation of the last Ray (1: Horizontal, 2: Vertical)
 	var lastTex = null;						// Last texture that was draw
 	
-	var sizeH = this.size.b / 2;
-	var floorText = this.game.getTexture(5);
+	var sizeH = (this.size.b / 2) << 0;
+	var floorText = null;
+	var ceilText = null;
+	
+	this.lookUpDown(mapManager.game);
 	
 	for (var i=0;i<this.size.a;i++){
 		var vAng = vec2(Math.cos(ang), -Math.sin(ang));	// Orientation of the casted angle
@@ -290,36 +270,83 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		
 		// Calculate the height of the wall
 		line = this.heightR / mDist;
-		var y1 = Math.round((this.size.b / 2) - line / 2);
+		var y1 = Math.round((this.size.b / 2) - line / 2) + this.zAngle;
 		var y2 = Math.round(y1 + line);
 		this.matDist[i] = mDist;
 		
 		var alpha = this.getAlphaByDistance(mDist);
 		
 		// Copy the texture data into memory
-		this.fillLine(i,y1,y2,tx,tex,colorH,alpha,false);
+		this.fillLine(i,y1,y2,tx,tex,colorH,alpha);
 		
-		for (var f=y2;f<this.size.b;f++){
-			var f2 = sizeH - (f - sizeH); 
-			
-			var py = Math.abs(sizeH - f);
+		// The first horline must be black
+		var c = Colors.blackC;
+		this.plot(i, 0, c, 255);
+		
+		var fry = y2;
+		var alphaH = sizeH + this.zAngle;
+		// Do the floor casting and drawing
+		for (var f=fry;f<this.size.b;f++){
+			var py = Math.abs(sizeH - f + this.zAngle);
 			var floorD = (90 / py) / cosB;
 			var fx = (p.a + vAng.a * floorD);
 			var fy = (p.b + vAng.b * floorD);
-			tx = (fx * floorText.width % floorText.width) << 0;
-			var ty = (fy * floorText.height % floorText.height) << 0;
-			var ind = tx + (ty * floorText.innerW);
-			var c = Colors.textures[floorText.texData[ind]];
 			
-			if (c){
+			var cx = (fx << 0);
+			var cy = (fy << 0);
+			if (!floor[cy]) continue;
+			floorText = this.game.getTexture(floor[cy][cx]);
+			
+			if (!floorText){ continue; }
+			
+			var tfx = (fx * floorText.width % floorText.width) << 0;
+			var tfy = (fy * floorText.height % floorText.height) << 0;
+			var ind = tfx + (tfy * floorText.innerW);
+			
+			var cf = Colors.textures[floorText.texData[ind]];
+			
+			if (cf){
 				var alp = 255;
 				if (this.fog != null){
-					if (f < sizeH){ alp = (sizeH - f) / sizeH * 255; }
-					else if (f >= sizeH){ alp = (f - sizeH) / sizeH * 255; }
+					if (f < alphaH){ alp = (alphaH - f) / sizeH * 255; }
+					else if (f >= alphaH){ alp = (f - alphaH) / sizeH * 255; }
 				}
+				if (alp > 255) alp = 255;
 			
-				this.plot(i, f, c, alp);
-				this.plot(i, f2, c, alp);
+				this.plot(i, f, cf, alp);
+			}
+		}
+		
+		var fry = y1 - 1;
+		// Do the ceil casting and drawing
+		for (var f=fry;f>=0;f--){
+			var py = Math.abs(sizeH - f + this.zAngle);
+			var floorD = (90 / py) / cosB;
+			var fx = (p.a + vAng.a * floorD);
+			var fy = (p.b + vAng.b * floorD);
+			
+			var cx = (fx << 0);
+			var cy = (fy << 0);
+			if (!floor[cy]) continue;
+			ceilText = this.game.getTexture(ceil[cy][cx]);
+			
+			if (!ceilText){ continue; }
+			
+			var tfx = (fx * ceilText.width % ceilText.width) << 0;
+			var tfy = (fy * ceilText.height % ceilText.height) << 0;
+			var ind = tfx + (tfy * ceilText.innerW);
+			
+			var cc = Colors.textures[ceilText.texData[ind]];
+			
+			if (cc){
+				var alp = 255;
+				if (this.fog != null){
+					if (f < alphaH){ alp = (alphaH - f) / sizeH * 255; }
+					else if (f >= alphaH){ alp = (f - alphaH) / sizeH * 255; }
+				}
+				if (alp > 255) alp = 255;
+			
+				this.plot(i, f, cc, alp);
 			}
 		}
 		
@@ -528,12 +555,13 @@ RaycastRender.prototype.drawDoor = function(ins){
 	}
 	if (x2 > this.size.a) x2 = this.size.a;
 	
+	var sizeH = (this.size.b / 2) << 0;
 	for (j=x1;j<x2;j++){
 		xx++;
 		if (dis <= this.matDist[j]){
 			sc = s + (ss * xx * d);
 			// Get the vertical position of this line
-			y1 = Math.round(hv - sc / 2);
+			y1 = Math.round(hv - sc / 2) + this.zAngle;
 			y2 = Math.round(y1 + sc);
 			
 			// Get the texture line
@@ -542,7 +570,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 			if (tx < 0) tx = 0;
 		
 			// Copy the texture line into the Buffer
-			this.fillLine(j,y1,y2,tx,tex,color,alpha,false);
+			this.fillLine(j,y1,y2,tx,tex,color,alpha);
 		}
 	}
 };
@@ -555,7 +583,8 @@ RaycastRender.prototype.drawInstance = function(ins){
 	// Variables for getting the position, texture, and color of the instance
 	var y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
 		
-	y1 = Math.round((this.size.b / 2) - ins.scale / 2);
+	var sizeH = (this.size.b / 2) << 0;
+	y1 = Math.round(sizeH - ins.scale / 2) + this.zAngle;
 	y2 = Math.round(y1 + ins.scale);
 	
 	// Get the texture of the instance
@@ -586,7 +615,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 				else tx -= tex.offsetL;
 				
 				// Copy the line of the texture into memory
-				this.fillLine(x,y1,y2,tx,tex,color,alpha,false);
+				this.fillLine(x,y1,y2,tx,tex,color,alpha);
 			}
 		}
 	}
@@ -625,4 +654,17 @@ RaycastRender.prototype.renderInstances = function(instances, doors){
 ===================================================*/
 RaycastRender.prototype.draw = function(/*Context*/ ctx, /*Vec2*/ position){
 	ctx.putImageData(this.canvas, position.a, position.b);
+};
+
+
+/*===================================================
+	Simulates a fake look up/down
+===================================================*/
+RaycastRender.prototype.lookUpDown = function(/*Game*/ game){
+	if (game.keys[49]) this.zAngle += 3; else
+	if (game.keys[50]) this.zAngle = 0; else
+	if (game.keys[51]) this.zAngle -= 3;
+	
+	if (this.zAngle > 75) this.zAngle = 75;
+	else if (this.zAngle < -75) this.zAngle = -75; 
 };

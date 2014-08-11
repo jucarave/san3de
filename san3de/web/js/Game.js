@@ -113,6 +113,8 @@ Game.prototype.parseMap = function(/*Object*/ data){
 	game.textures = data.textures;
 	game.map = new MapManager(game, data.map, data.player);
 	game.map.createInstances(data.instances);
+	game.map.floor = data.floor;
+	game.map.ceil = data.ceil;
 	
 	Colors.textures = data.colors;
 	Colors.texturesShadow = data.colorsS;

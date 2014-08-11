@@ -7,6 +7,7 @@ var Colors = {
 	texturesShadow: [], 	// Colors of the horizontal walls
 	billboards: [], 		// Colors of items and enemies
 	alphaC: [255,0,255], 	// Color of transparency
+	blackC: [0,0,0], 		// Color black
 	ceil: [], 				// Color of the ceiling
 	floor: [], 				// Color of the floor
 	shadowF: [],			// Dark color of the floor (For when the player is falling)

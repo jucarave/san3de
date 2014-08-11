@@ -195,6 +195,8 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 			var player = {};
 			var textures = {indexes: [null]};
 			var instances = [];
+			var floor = null;
+			var ceil = null;
 			var map = null;
 			for (var i=0,len=text.length;i<len;i++){
 				var line = text[i].trim();
@@ -206,21 +208,22 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 				
 				// Reads the first byte and do the corresponding parsing for the data
 				
-				// Ceil colour
-				if (type == 0x00){ Colors.ceil = Colors.parseColor(data); }
-				else if (type == 0x01){ // Floor colour
-					Colors.floor = Colors.parseColor(data);
-					if (hasShadow) Colors.shadowF = Colors.getDark(Colors.floor);
-				}else if (type == 0x02){ // Colours of the textures in the package
+				if (type == 0x00){ // Ceil tiles
+					var params = data.split(" ");
+					ceil = mp.parseMap(params);
+				}else if (type == 0x01){ // Floor tiles
+					var params = data.split(" ");
+					floor = mp.parseMap(params);
+				}else if (type == 0x02){ // Map data
+					var params = data.split(" ");
+					map = mp.parseMap(params);
+				}else if (type == 0x03){ // Colours of the textures in the package
 					colors = data.split(",");
 					colorsS = new Array(colors.length);
 					for (var j=0,jlen=colors.length;j<jlen;j++){
 						colors[j] = Colors.parseColor(colors[j]);
 						colorsS[j] = Colors.getDark(colors[j]);
 					}
-				}else if (type == 0x03){ // Map data
-					var params = data.split(" ");
-					map = mp.parseMap(params);
 				}else if (type == 0x04){ // Player data
 					var params = data.split(" ");
 					player.x = parseInt(params[0].trim(), 10);
@@ -244,6 +247,8 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 			ktd.colorsS = colorsS;
 			ktd.textures = textures;
 			ktd.instances = instances;
+			ktd.floor = floor;
+			ktd.ceil = ceil;
 			ktd.map = map;
 			
 			if (callback) callback(ktd);
