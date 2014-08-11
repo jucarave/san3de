@@ -34,7 +34,11 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	
 	// Variables for when the player is falling in a trap
 	this.falling = false;
-	this.z = (this.size.b / 2) << 0;
+	
+	this.baseHeight = 32;
+	this.rBase = this.heightR / this.baseHeight;
+	this.floorR = 90 / this.baseHeight;
+	this.z = this.baseHeight;
 	this.zAngle = 0;
 	this.vspeed = 0;
 	
@@ -269,9 +273,12 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		mDist *= cosB;
 		
 		// Calculate the height of the wall
+		var sRLine = this.rBase * this.z;
+		var rLine = sRLine / mDist;
 		line = this.heightR / mDist;
-		var y1 = Math.round((this.size.b / 2) - line / 2) + this.zAngle;
-		var y2 = Math.round(y1 + line);
+		var height = this.z - 32;
+		var y2 = Math.round((this.size.b / 2) + rLine / 2) + this.zAngle + height;
+		var y1 = Math.round(y2 - line);
 		this.matDist[i] = mDist;
 		
 		var alpha = this.getAlphaByDistance(mDist);
@@ -285,10 +292,11 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		
 		var fry = y2;
 		var alphaH = sizeH + this.zAngle;
+		var rel = this.floorR * this.z / cosB;
 		// Do the floor casting and drawing
 		for (var f=fry;f<this.size.b;f++){
-			var py = Math.abs(sizeH - f + this.zAngle);
-			var floorD = (90 / py) / cosB;
+			var py = Math.abs(sizeH - f + this.zAngle + height);
+			var floorD = (rel / py);
 			var fx = (p.a + vAng.a * floorD);
 			var fy = (p.b + vAng.b * floorD);
 			
@@ -318,10 +326,12 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		}
 		
 		var fry = y1 - 1;
+		var z2 = 64 - this.z;
+		rel = this.floorR * z2 / cosB;
 		// Do the ceil casting and drawing
 		for (var f=fry;f>=0;f--){
-			var py = Math.abs(sizeH - f + this.zAngle);
-			var floorD = (90 / py) / cosB;
+			var py = Math.abs(sizeH - f + this.zAngle + height);
+			var floorD = (rel / py);
 			var fx = (p.a + vAng.a * floorD);
 			var fy = (p.b + vAng.b * floorD);
 			
@@ -555,13 +565,14 @@ RaycastRender.prototype.drawDoor = function(ins){
 	}
 	if (x2 > this.size.a) x2 = this.size.a;
 	
+	var height = this.z - 32;
 	var sizeH = (this.size.b / 2) << 0;
 	for (j=x1;j<x2;j++){
 		xx++;
 		if (dis <= this.matDist[j]){
 			sc = s + (ss * xx * d);
 			// Get the vertical position of this line
-			y1 = Math.round(hv - sc / 2) + this.zAngle;
+			y1 = Math.round(hv - sc / 2) + this.zAngle + height;
 			y2 = Math.round(y1 + sc);
 			
 			// Get the texture line
@@ -583,8 +594,9 @@ RaycastRender.prototype.drawInstance = function(ins){
 	// Variables for getting the position, texture, and color of the instance
 	var y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
 		
+	var height = this.z - 32;
 	var sizeH = (this.size.b / 2) << 0;
-	y1 = Math.round(sizeH - ins.scale / 2) + this.zAngle;
+	y1 = Math.round(sizeH - ins.scale / 2) + this.zAngle + height;
 	y2 = Math.round(y1 + ins.scale);
 	
 	// Get the texture of the instance
@@ -661,6 +673,9 @@ RaycastRender.prototype.draw = function(/*Context*/ ctx, /*Vec2*/ position){
 	Simulates a fake look up/down
 ===================================================*/
 RaycastRender.prototype.lookUpDown = function(/*Game*/ game){
+	if (game.keys[66]) this.z -= 1; else
+	if (game.keys[67]) this.z += 1;
+	
 	if (game.keys[49]) this.zAngle += 3; else
 	if (game.keys[50]) this.zAngle = 0; else
 	if (game.keys[51]) this.zAngle -= 3;
