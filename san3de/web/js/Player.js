@@ -14,6 +14,9 @@ function Player(/*Vec2*/ position, /*float*/ direction, /*MapManager*/ mapManage
 	
 	// When something special is happening like falling through a trap, the player won't move
 	this.canMove = true;
+	
+	this.z = 32;
+	this.targetZ = 32;
 }
 
 /*===================================================
@@ -40,6 +43,12 @@ Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
 		var ins = this.mapManager.getInstanceAt(xx, yy);
 		if (!ins || !ins.isSolid())
 			this.position.b += yTo * this.movementSpd;
+	}
+	
+	if (this.mapManager.checkIfWater(this.position.a << 0, this.position.b << 0)){
+		this.targetZ = 10;
+	}else{
+		this.targetZ = 32;
 	}
 };
 
@@ -119,10 +128,26 @@ Player.prototype.step = function(){
 };
 
 /*===================================================
+	Makes the player to go up or down, used
+	only in the water tiles
+===================================================*/
+Player.prototype.changeZValue = function(){
+	if (this.targetZ < this.z){
+		this.z -= 3;
+		if (this.z <= this.targetZ) this.z = this.targetZ;
+	}else if (this.targetZ > this.z){
+		this.z += 5;
+		if (this.z >= this.targetZ) this.z = this.targetZ;
+	}
+};
+
+/*===================================================
 	This is the entry of the player instance.
 ===================================================*/
 Player.prototype.loop = function(){
 	this.step();
+	
+	this.changeZValue();
 	
 	// If the player is on a trap, then stop doing anything
 	if (this.mapManager.isOnTrap(this.position)){

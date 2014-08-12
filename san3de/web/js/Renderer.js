@@ -166,6 +166,8 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var last = 0;							// Orientation of the last Ray (1: Horizontal, 2: Vertical)
 	var lastTex = null;						// Last texture that was draw
 	
+	this.z = mapManager.player.z;
+	
 	var sizeH = (this.size.b / 2) << 0;
 	var floorText = null;
 	var ceilText = null;
@@ -291,7 +293,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		this.plot(i, 0, c, 255);
 		
 		var fry = y2;
-		var alphaH = sizeH + this.zAngle;
+		var alphaH = sizeH + this.zAngle + height;
 		var rel = this.floorR * this.z / cosB;
 		// Do the floor casting and drawing
 		for (var f=fry;f<this.size.b;f++){
@@ -413,8 +415,12 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	// Get the scale of the object
 	var scale = this.heightR / dist;
 	
+	// Get the zPosition scale of the object
+	var sRLine = this.rBase * this.z;
+	var rLine = sRLine / dist;
+	
 	x = Math.round(x);
-	return {x: x, dist: dist, scale: scale, angle: angle};
+	return {x: x, dist: dist, scale: scale, angle: angle, zScale: rLine};
 };
 
 /*===================================================
@@ -447,7 +453,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		
 		// Center the object in its position
 		ray.x = Math.round(ray.x - ray.scale / 2);
-		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle, type: 0};
+		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle, type: 0, zScale: ray.zScale};
 		var added = false;
 		
 		// Find if there is a near distance, then put it behind
@@ -500,7 +506,7 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		var ray2 = this.castTo(position, pos, lAng, rAng, direction);
 		if (!ray2) continue;
 		
-		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1};
+		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1, zScale1: ray1.zScale, zScale2: ray2.zScale};
 		var added = false;
 		
 		// Check if there is any near door, then put it behind
@@ -538,12 +544,14 @@ RaycastRender.prototype.drawDoor = function(ins){
 		x2 = ins.x2;
 		d = (ins.scale1 < ins.scale2)? 1 : -1;
 		s = ins.scale1;
+		sZ = ins.zScale1;
 		texScale = 1;
 	}else{
 		x1 = ins.x2;
 		x2 = ins.x1;
 		d = (ins.scale1 < ins.scale2)? -1 : 1;
 		s = ins.scale2;
+		sZ = ins.zScale2;
 		texScale = -1;
 	}
 	
@@ -553,6 +561,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 	// Get the scale variance between horizontal pixels
 	dis = (ins.dist < ins.dist2)? ins.dist : ins.dist2;
 	ss = Math.abs(ins.scale2 - ins.scale1) / (x2 - x1);
+	zs = Math.abs(ins.zScale2 - ins.zScale1) / (x2 - x1);
 	
 	var alpha = this.getAlphaByDistance(dis);
 	
@@ -570,10 +579,12 @@ RaycastRender.prototype.drawDoor = function(ins){
 	for (j=x1;j<x2;j++){
 		xx++;
 		if (dis <= this.matDist[j]){
+			zSc = sZ + (zs * xx * d);
 			sc = s + (ss * xx * d);
+			
 			// Get the vertical position of this line
-			y1 = Math.round(hv - sc / 2) + this.zAngle + height;
-			y2 = Math.round(y1 + sc);
+			y2 = Math.round(hv + zSc / 2) + this.zAngle + height;
+			y1 = Math.round(y2 - sc);
 			
 			// Get the texture line
 			tx = ((xx / size) * tex.width) << 0;
@@ -596,8 +607,8 @@ RaycastRender.prototype.drawInstance = function(ins){
 		
 	var height = this.z - 32;
 	var sizeH = (this.size.b / 2) << 0;
-	y1 = Math.round(sizeH - ins.scale / 2) + this.zAngle + height;
-	y2 = Math.round(y1 + ins.scale);
+	y2 = Math.round(sizeH + ins.zScale / 2) + this.zAngle + height;
+	y1 = Math.round(y2 - ins.scale);
 	
 	// Get the texture of the instance
 	texInfo = ins.ins.getTexture(ins.angle);

@@ -145,6 +145,13 @@ Game.prototype.getTexture = function(/*Int*/ texId){
 };
 
 /*===================================================
+	Gets a texture by its code
+===================================================*/
+Game.prototype.getTextureIdByCode = function(/*String*/ texCode){
+	return this.textures.indexes.indexOf(texCode);
+};
+
+/*===================================================
 	Gets a billboard, enemy or item texture by
 	its code, the code are assigned in the file
 	data.

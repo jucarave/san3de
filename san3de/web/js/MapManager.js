@@ -13,7 +13,19 @@ function MapManager(/*Game*/ game, /*Array*/ map, /*Object*/ player){
 	this.floor = null;
 	this.ceil = null;
 	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
+	this.waterTiles = [];
 }
+
+MapManager.prototype.checkIfWater = function(/*Int*/ x, /*Int*/ y){
+	if (!this.floor[y]) return false;
+	var t = this.floor[y][x];
+	
+	if (this.waterTiles.indexOf(t) != -1){
+		return true;
+	}
+	
+	return false;
+};
 
 /*===================================================
 	Returns whenever a tile in the map is solid
@@ -206,6 +218,7 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
 		else if (type == 4){ this.instances.push(new Item(vec, ins[3], ins.splice(4), this)); }
 		else if (type == 5){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
+		else if (type == 6){ this.waterTiles.push(this.game.getTextureIdByCode(ins[3])); }
 	}
 };
 
