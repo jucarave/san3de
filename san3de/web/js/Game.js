@@ -19,6 +19,9 @@ function Game(){
 	this.render.setFog(1, 10);
 	this.renderPos = vec2(16,17);
 	
+	this.canvasPos = vec2(this.eng.canvas.offsetLeft, this.eng.canvas.offsetTop);
+	this.scale = this.eng.canvas.offsetHeight / 200;
+	
 	this.map = null;						// Current Map the player is in
 	this.scene = null;						// Scene to render
 	this.fps = Math.floor(1000 / 30);		// Base speed the game runs
@@ -30,6 +33,8 @@ function Game(){
 	this.textures = {};						// Wall and Door textures (This should change per map)
 	this.billboards = {};					// Objects, Enemies and Misc textures (This shouldn't change so often)
 	this.keys = new Uint8ClampedArray(255);	// Handle all the keyboard keys status
+	this.cursorsPos = vec2(-1, -1);			// Position of the cursor
+	this.mouseB = 0;						// Is the mouse pressed
 	
 	this.lastT = 0;							// Last time a frame was render
 	
@@ -257,6 +262,32 @@ Utils.addEvent(window, "load", function(){
 		if (window.event) e = window.event;
 		
 		game.keys[e.keyCode] = 0;
+	});
+	
+	Utils.addEvent(document, "mousedown", function(e){
+		if (window.event) e = window.event;
+		
+		var x = (e.clientX - game.canvasPos.a) / game.scale;
+		var y = (e.clientY - game.canvasPos.b) / game.scale;
+		
+		if (game.mouseB == 2) return;
+		
+		game.cursorPos.set(x,y);
+		game.mouseB = 1;
+	});
+	
+	Utils.addEvent(document, "mousemove", function(e){
+		if (window.event) e = window.event;
+		
+		var x = (e.clientX - game.canvasPos.a) / game.scale;
+		var y = (e.clientY - game.canvasPos.b) / game.scale;
+		
+		game.cursorPos.set(x,y);
+	});
+	
+	Utils.addEvent(document, "mouseup", function(e){
+		if (window.event) e = window.event;
+		game.mouseB = 0;
 	});
 	
 	// Debug function to keep right the fps count
