@@ -28,12 +28,13 @@ Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
 	var spd = this.movementSpd * 2;
 	var xx = (this.position.a + xTo * spd) << 0;
 	var yy = (this.position.b) << 0;
+	var pd = (this.z == 10)? 3 : 1;
 	
 	// Check if there is a solid wall at the position
 	if (!this.mapManager.isSolid(xx, yy)){
 		var ins = this.mapManager.getInstanceAt(xx, yy);
 		if (!ins || !ins.isSolid())
-			this.position.a += xTo * this.movementSpd;
+			this.position.a += xTo * (this.movementSpd / pd);
 	}
 	
 	// Check if there is an instance at the position
@@ -42,7 +43,7 @@ Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
 	if (!this.mapManager.isSolid(xx, yy)){
 		var ins = this.mapManager.getInstanceAt(xx, yy);
 		if (!ins || !ins.isSolid())
-			this.position.b += yTo * this.movementSpd;
+			this.position.b += yTo * (this.movementSpd / pd);
 	}
 	
 	if (this.mapManager.checkIfWater(this.position.a << 0, this.position.b << 0)){
@@ -133,10 +134,10 @@ Player.prototype.step = function(){
 ===================================================*/
 Player.prototype.changeZValue = function(){
 	if (this.targetZ < this.z){
-		this.z -= 3;
+		this.z -= 5;
 		if (this.z <= this.targetZ) this.z = this.targetZ;
 	}else if (this.targetZ > this.z){
-		this.z += 5;
+		this.z += 3;
 		if (this.z >= this.targetZ) this.z = this.targetZ;
 	}
 };

@@ -684,9 +684,6 @@ RaycastRender.prototype.draw = function(/*Context*/ ctx, /*Vec2*/ position){
 	Simulates a fake look up/down
 ===================================================*/
 RaycastRender.prototype.lookUpDown = function(/*Game*/ game){
-	if (game.keys[66]) this.z -= 1; else
-	if (game.keys[67]) this.z += 1;
-	
 	if (game.keys[49]) this.zAngle += 3; else
 	if (game.keys[50]) this.zAngle = 0; else
 	if (game.keys[51]) this.zAngle -= 3;
