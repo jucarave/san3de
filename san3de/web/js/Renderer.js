@@ -226,7 +226,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 					// If there is a wall, then get its texture and distance
 					rayA.a = Math.round(rayA.a);
 					var xx = rayA.a - p.a;
-					dist.a = Math.abs(xx / Math.cos(ang));
+					dist.a = Math.abs(xx / vAng.a);
 					if (map[wy]) texA = map[wy][wx];
 					foundA = true;
 				}else{
@@ -242,7 +242,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 					// If there is a wall, then get its texture and distance
 					rayB.b = Math.round(rayB.b);
 					var xx = rayB.b - p.b;
-					dist.b = Math.abs(xx / Math.sin(ang));
+					dist.b = Math.abs(xx / vAng.b);
 					if (map[wy]) texB = map[wy][wx];
 					foundB = true;
 				}else{
