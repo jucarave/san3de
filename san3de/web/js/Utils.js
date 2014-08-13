@@ -123,6 +123,9 @@ window.requestAnimFrame =
 	function(/* function */ draw1){
 		window.setTimeout(draw1, 1000 / 30);
 	};
+
+// Audio Context
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	
 /*===================================================
 	Sets the game in fullscreen

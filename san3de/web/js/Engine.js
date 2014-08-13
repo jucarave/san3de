@@ -5,7 +5,13 @@
 function Engine(/*Vec2*/ size, /*Element*/ container){
 	this.canvas = this.createCanvas(size, container);
 	this.ctx = this.getCtx(this.canvas);
+	this.audioCtx = null;
+	if (window.AudioContext)
+		this.audioCtx = new AudioContext();
+	else
+		alert("Your browser doesn't suppor the Audio API");
 	
+	this.audio = [];
 	this.images = [];
 }
 
@@ -282,4 +288,55 @@ Engine.prototype.areImagesReady = function(){
 	}
 	
 	return true;
+};
+
+/*===================================================
+	Loads a new Audio file using the AudioAPI
+===================================================*/
+Engine.prototype.loadAudio = function(url, isMusic){
+	var eng = this;
+	if (!eng.audioCtx) return null;
+	
+	var audio = {buffer: null, source: null, ready: false, isMusic: isMusic};
+	
+	var http = Utils.getHttp();
+	http.open('GET', url, true);
+	http.responseType = 'arraybuffer';
+	
+	http.onload = function(){
+		eng.audioCtx.decodeAudioData(http.response, function(buffer){
+			audio.buffer = buffer;
+			audio.ready = true;
+		}, function(msg){
+			alert(msg);
+		});
+	};
+	
+	http.send();
+	
+	this.audio.push(audio);
+	
+	return audio;
+};
+
+
+/*===================================================
+	Plays an audio loaded with the AudioAPI
+===================================================*/
+Engine.prototype.playSound = function(soundFile, loop, tryIfNotReady){
+	var eng = this;
+	if (!soundFile || !soundFile.ready){
+		if (tryIfNotReady){ setTimeout(function(){ eng.playSound(soundFile, loop, tryIfNotReady); }, 300); } 
+		return;
+	}
+	
+	var source = eng.audioCtx.createBufferSource();
+	source.buffer = soundFile.buffer;
+	source.connect(eng.audioCtx.destination);
+	source.start(0);
+	source.loop = loop;
+	source.looping = loop;
+	
+	if (soundFile.isMusic)
+		soundFile.source = source;
 };

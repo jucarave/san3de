@@ -166,7 +166,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var last = 0;							// Orientation of the last Ray (1: Horizontal, 2: Vertical)
 	var lastTex = null;						// Last texture that was draw
 	
-	this.z = mapManager.player.z;
+	this.z = (mapManager.player.z + mapManager.player.jogZ.a) << 0;
 	
 	var sizeH = (this.size.b / 2) << 0;
 	var floorText = null;

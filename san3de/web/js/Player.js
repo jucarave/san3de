@@ -10,25 +10,41 @@ function Player(/*Vec2*/ position, /*float*/ direction, /*MapManager*/ mapManage
 		
 	// I should put this in a different place for configuration
 	this.rotationSpd = Math.degToRad(5);
-	this.movementSpd = 0.3;
+	this.movementSpd = 0.1;
 	
 	// When something special is happening like falling through a trap, the player won't move
 	this.canMove = true;
 	
 	this.z = 32;
 	this.targetZ = 32;
+	this.jogZ = vec2(0,0);
 }
+
+/*===================================================
+	Make the effect that the player is walking
+	and no skating on the dungeon
+===================================================*/
+Player.prototype.jog = function(){
+	var dir = (this.jogZ.b == 0)? 1 : -1;
+	var maxJog = (this.z == 10)? 2 : 1.5;
+	var jogSpd = (this.z == 10)? 0.4 : 0.25;
+	
+	this.jogZ.a += jogSpd * dir;
+	if (this.jogZ.a >= maxJog) this.jogZ.set(maxJog,1); else
+	if (this.jogZ.a <= -maxJog) this.jogZ.set(-maxJog,0);
+};
 
 /*===================================================
 	Move the player to a specific position only
 	if there is no a wall or a solid instance
 	there
 ===================================================*/
-Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
+Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo, /*Boolean*/ sliding){
 	var spd = this.movementSpd * 2;
 	var xx = (this.position.a + xTo * spd) << 0;
 	var yy = (this.position.b) << 0;
 	var pd = (this.z == 10)? 3 : 1;
+	if (sliding) pd *= 2;
 	
 	// Check if there is a solid wall at the position
 	if (!this.mapManager.isSolid(xx, yy)){
@@ -46,6 +62,7 @@ Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
 			this.position.b += yTo * (this.movementSpd / pd);
 	}
 	
+	this.jog();
 	if (this.mapManager.checkIfWater(this.position.a << 0, this.position.b << 0)){
 		this.targetZ = 10;
 	}else{
@@ -59,7 +76,7 @@ Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo){
 Player.prototype.movement = function(){
 	var game = this.mapManager.game;
 	
-	var xTo = 0, yTo = 0;
+	var xTo = 0, yTo = 0, sliding = false;
 	if (game.keys[87] == 1){ // W
 		xTo = Math.cos(this.direction);
 		yTo = -Math.sin(this.direction);
@@ -69,16 +86,20 @@ Player.prototype.movement = function(){
 	}
 	
 	if (game.keys[65] == 1){ // A
+		sliding = true;
 		xTo = Math.cos(this.direction + Math.PI_2);
 		yTo = -Math.sin(this.direction + Math.PI_2); 
 	}else if (game.keys[68] == 1){ // D
+		sliding = true;
 		xTo = -Math.cos(this.direction + Math.PI_2);
 		yTo = Math.sin(this.direction + Math.PI_2); 
 	}
 	
 	// If the player press any key then attempt to move the player to that position
 	if (xTo != 0 || yTo != 0){
-		this.moveTo(xTo, yTo);
+		this.moveTo(xTo, yTo, sliding);
+	}else{
+		this.jogZ.set(0,0);
 	}
 };
 

@@ -14,7 +14,8 @@ function Game(){
 	// Constant classes that are working during the execution of the game
 	this.gameSize = vec2(320,200);
 	this.eng = new Engine(this.gameSize, Utils.get("divGame"));
-	this.console = new Console(10, '10px "Courier"', this);
+	this.font = '10px "Arial"';
+	this.console = new Console(10, this.font, this);
 	this.render = new RaycastRender(this.eng.getData(vec2(208,127)), 60, 180, this);
 	this.render.setFog(1, 10);
 	this.renderPos = vec2(16,17);
@@ -33,7 +34,7 @@ function Game(){
 	this.textures = {};						// Wall and Door textures (This should change per map)
 	this.billboards = {};					// Objects, Enemies and Misc textures (This shouldn't change so often)
 	this.keys = new Uint8ClampedArray(255);	// Handle all the keyboard keys status
-	this.cursorsPos = vec2(-1, -1);			// Position of the cursor
+	this.cursorPos = vec2(-1, -1);			// Position of the cursor
 	this.mouseB = 0;						// Is the mouse pressed
 	
 	this.lastT = 0;							// Last time a frame was render
@@ -41,10 +42,12 @@ function Game(){
 	this.inventory = [];					// General inventory for all the game
 	
 	this.images = {};						// Non "3D" Images used in the game
+	this.audios = {};						// All the audios from the game
 	
 	// Load the map data (this should be somewhere else when the map is actually loaded)
 	var game = this;
 	this.loadImages();
+	this.loadAudios();
 	this.eng.loadKTD("kramBillboards.ktd", false, function(data){ game.parseBillboards(data); });
 	
 	// Shows a welcome message with the game instructions.
@@ -53,6 +56,40 @@ function Game(){
 	this.console.addMessage("Press Enter to interact with doors and objects", "unique", "white");
 	this.console.addMessage("Have fun!", "unique", "yellow");
 }
+
+/*===================================================
+	Stops all the songs that may be playing right
+	now (it shouldn't be more than one)
+===================================================*/
+Game.prototype.stopAllMusic = function(){
+	for (var i in this.audios){
+		var aud = this.audios[i];
+		if (aud.isMusic && aud.source){
+			aud.stop();
+			aud.source = null;
+		}
+	}
+};
+
+/*===================================================
+	PLays a background music while shutting the
+	other songs
+===================================================*/
+Game.prototype.playMusic = function(audioCode){
+	var audio = this.audios[audioCode];
+	if (!audio) return;
+	
+	this.stopAllMusic();
+	this.eng.playSound(audio, true, true);
+};
+
+/*===================================================
+	Loads all the audios that are going to be
+	used in the game
+===================================================*/
+Game.prototype.loadAudios = function(){
+	this.audios.descent = this.eng.loadAudio("ogg/descent.ogg", true);
+};
 
 /*===================================================
 	Loads all the interface and non 3D images
@@ -93,6 +130,19 @@ Game.prototype.getCtx = function(){
 Game.prototype.getKeyPressed = function(/*Int*/ keyCode){
 	if (this.keys[keyCode] == 1){
 		this.keys[keyCode] = 2;
+		return true;
+	}
+	
+	return false;
+};
+
+/*===================================================
+	Check if the left button of the mouse was
+	pressed
+===================================================*/
+Game.prototype.getMouseButtonPressed = function(){
+	if (this.mouseB == 1){
+		this.mouseB = 2;
 		return true;
 	}
 	
@@ -175,6 +225,7 @@ Game.prototype.getBillboard = function(/*String*/ texCode){
 Game.prototype.drawFPS = function(/*float*/ now){
 	var fps = Math.floor((++this.numberFrames) / ((now - this.firstFrame) / 1000));
 	var ctx = this.getCtx();
+	ctx.font = this.font;
 	ctx.fillStyle = "white";
 	ctx.fillText("FPS: " + fps + "/30", 16, 16);
 };
@@ -246,6 +297,7 @@ Utils.addEvent(window, "load", function(){
 	var game = new Game();
 	
 	game.newGame();
+	var canvas = game.eng.canvas;
 	
 	// Key binding when the player press a key
 	Utils.addEvent(document, "keydown", function(e){
@@ -264,7 +316,7 @@ Utils.addEvent(window, "load", function(){
 		game.keys[e.keyCode] = 0;
 	});
 	
-	Utils.addEvent(document, "mousedown", function(e){
+	Utils.addEvent(canvas, "mousedown", function(e){
 		if (window.event) e = window.event;
 		
 		var x = (e.clientX - game.canvasPos.a) / game.scale;
