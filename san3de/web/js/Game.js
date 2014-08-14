@@ -268,7 +268,6 @@ Game.prototype.loopGame = function(/*float*/ deltaT){
 			game.scene.loop();
 		}else if (game.map){ // If there is a map being played execute it.
 			game.render.raycast(game.map);
-			game.render.fall();
 		
 			game.map.loop();
 			game.render.draw(game.getCtx(), game.renderPos);

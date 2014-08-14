@@ -98,19 +98,21 @@ Math.getDistance = function(/*Vec2*/ a, /*Vec2*/ b){
 Math.PI2 = Math.PI * 2;
 Math.PI_2 = Math.PI / 2;
 Math.PI3_2 = 3 * Math.PI / 2;
+Math.radRelation = Math.PI / 180;
+Math.degRelation = 180 / Math.PI;
 
 /*===================================================
 	Transforms a degree angle to a radian
 ===================================================*/
 Math.degToRad = function(/*float*/ value){
-	return value * Math.PI / 180;
+	return value * Math.radRelation;
 };
 
 /*===================================================
 	Transforms a radian angle to a degree
 ===================================================*/
 Math.radToDeg = function(/*float*/ value){
-	return value * 180 / Math.PI;
+	return value * Math.degRelation;
 };
 
 // Depending on the browser, this function can be different

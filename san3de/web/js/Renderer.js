@@ -32,9 +32,6 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	// Black fog of the canvas
 	this.fog = null;
 	
-	// Variables for when the player is falling in a trap
-	this.falling = false;
-	
 	this.baseHeight = 32;
 	this.rBase = this.heightR / this.baseHeight;
 	this.floorR = 90 / this.baseHeight;
@@ -72,19 +69,6 @@ RaycastRender.prototype.setFog = function(start, end){
 };
 
 /*===================================================
-	If the player is falling through a trap, then
-	move all the walls up
-===================================================*/
-RaycastRender.prototype.fall = function(){
-	if (!this.falling) return;
-	
-	this.vspeed -= 60;
-	this.z += this.vspeed;
-	
-	if (this.z < -this.size.b) this.falling = false;
-};
-
-/*===================================================
 	Plot a pixel in the 32Bit Array in the current
 	Endian format.
 ===================================================*/
@@ -111,9 +95,6 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	
 	var sy = 0;				// First vertical position of the renderer
 	var ey = this.size.b;	// It can't go beyond the size of the renderer
-	var draw = false;		// Was this line drew?
-	var drawL = 0;			// Drawed pixels
-	var skipL = 0;			// Skiped pixels
 	
 	if (y2 > ey) y2 = ey;
 	
@@ -126,7 +107,6 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 		// Get the vertical position of the texture
 		ty = ((i - y1) / size * (texture.height - 1)) << 0;
 		if (ty < texture.offsetT || ty >= texture.offsetB){
-			skipL++; 
 			continue;
 		}
 		ty -= texture.offsetT;
@@ -138,16 +118,11 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 		// If there is no color, then throw an error
 		if (!c) throw tx + " _ " + ty + " _ " + ind + " _ " + texture.name;
 		if (aC[0] == c[0] && aC[1] == c[1] && aC[2] == c[2]){
-			skipL++; 
 			continue; 
 		}
 			
-		drawL++;
 		this.plot(x, i, c, alpha);
 	}
-	
-	draw = (drawL > skipL);
-	return draw;
 };
 
 /*===================================================
@@ -172,10 +147,12 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var floorText = null;
 	var ceilText = null;
 	
+	var mt = Math;
+	
 	this.lookUpDown(mapManager.game);
 	
 	for (var i=0;i<this.size.a;i++){
-		var vAng = vec2(Math.cos(ang), -Math.sin(ang));	// Orientation of the casted angle
+		var vAng = vec2(mt.cos(ang), -mt.sin(ang));			// Orientation of the casted angle
 		var rayA = p.clone();							// Position of the horizontal ray
 		var rayB = p.clone();							// Position of the vertical ray
 		var jumA = vec2(1,1);							// Jumps of the horizontal ray
@@ -183,13 +160,13 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var dist = vec2(-1,-1);							// Distance of both rays
 		var rayP = null;								// Position of the found wall
 		var mDist = -1;									// Distance of the found wall
-		var tan = Math.tan(ang);						// Tangent of the casted angle
+		var tan = mt.tan(ang);								// Tangent of the casted angle
 		var hit = false;								// Had both rays hit?
 		var foundA = false, foundB = false;				// Had any of the rays hit?
 		var wx, wy;										// Map x, y
 		var line = 0;									// Size of the wall
-		var angB = Math.abs(d - ang);					// Beta angle (to correct the eyefish)
-		var cosB = Math.cos(angB);						// Cosine of the beta angle (used mostly in floorCasting)
+		var angB = mt.abs(d - ang);					// Beta angle (to correct the eyefish)
+		var cosB = mt.cos(angB);							// Cosine of the beta angle (used mostly in floorCasting)
 		var tex, texA, texB;							// Horizontal, Vertical and found texture
 		var tx;											// Horizontal position in the texture
 		var colorH = null;								// Determines if the colors are normal or shadowed
@@ -224,9 +201,9 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 				wy = (rayA.b << 0);
 				if (map[wy] == undefined || map[wy][wx] != 0){
 					// If there is a wall, then get its texture and distance
-					rayA.a = Math.round(rayA.a);
+					rayA.a = mt.round(rayA.a);
 					var xx = rayA.a - p.a;
-					dist.a = Math.abs(xx / vAng.a);
+					dist.a = mt.abs(xx / vAng.a);
 					if (map[wy]) texA = map[wy][wx];
 					foundA = true;
 				}else{
@@ -240,9 +217,9 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 				wy = (rayB.b << 0);
 				if (map[wy] == undefined || map[wy][wx] != 0){
 					// If there is a wall, then get its texture and distance
-					rayB.b = Math.round(rayB.b);
+					rayB.b = mt.round(rayB.b);
 					var xx = rayB.b - p.b;
-					dist.b = Math.abs(xx / vAng.b);
+					dist.b = mt.abs(xx / vAng.b);
 					if (map[wy]) texB = map[wy][wx];
 					foundB = true;
 				}else{
@@ -255,7 +232,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		
 		// Little hack (WIP) to adjust vertical lines of different 
 		// color when both distances are close
-		if (Math.abs(dist.a - dist.b) <= 0.01){
+		if (mt.abs(dist.a - dist.b) <= 0.01){
 			if (last == 2 && texB == lastTex) dist.a = dist.b + 3;
 			else if (last == 1 && texA == lastTex) dist.b = dist.a + 3;
 		}
@@ -279,8 +256,8 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var rLine = sRLine / mDist;
 		line = this.heightR / mDist;
 		var height = this.z - 32;
-		var y2 = Math.round((this.size.b / 2) + rLine / 2) + this.zAngle + height;
-		var y1 = Math.round(y2 - line);
+		var y2 = mt.round((this.size.b / 2) + rLine / 2) + this.zAngle + height;
+		var y1 = mt.round(y2 - line);
 		this.matDist[i] = mDist;
 		
 		var alpha = this.getAlphaByDistance(mDist);
@@ -297,7 +274,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var rel = this.floorR * this.z / cosB;
 		// Do the floor casting and drawing
 		for (var f=fry;f<this.size.b;f++){
-			var py = Math.abs(sizeH - f + this.zAngle + height);
+			var py = mt.abs(sizeH - f + this.zAngle + height);
 			var floorD = (rel / py);
 			var fx = (p.a + vAng.a * floorD);
 			var fy = (p.b + vAng.b * floorD);
@@ -332,7 +309,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		rel = this.floorR * z2 / cosB;
 		// Do the ceil casting and drawing
 		for (var f=fry;f>=0;f--){
-			var py = Math.abs(sizeH - f + this.zAngle + height);
+			var py = mt.abs(sizeH - f + this.zAngle + height);
 			var floorD = (rel / py);
 			var fx = (p.a + vAng.a * floorD);
 			var fy = (p.b + vAng.b * floorD);
@@ -383,18 +360,20 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	the size and distance of the object
 ===================================================*/
 RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*/ lAng, /*float*/ rAng, /*float*/ dir){
+	var mt = Math;
+	
 	// Get the angle between the two objects
-	var angle = Math.getAngle(posA, posB);
-	var angB = Math.abs(dir - angle);
+	var angle = mt.getAngle(posA, posB);
+	var angB = mt.abs(mt.getShortAngle(angle, dir));
 	
 	// Get the distance from both view extremes to the angle
-	var sl = Math.abs(Math.getShortAngle(angle, lAng));
-	var sr = Math.abs(Math.getShortAngle(angle, rAng));
+	var sl = mt.abs(mt.getShortAngle(angle, lAng));
+	var sr = mt.abs(mt.getShortAngle(angle, rAng));
 	
 	// Avoid the problem of the 359+1=0 degrees
-	angle += Math.PI2;
-	lAng += Math.PI2;
-	rAng += Math.PI2;
+	angle += mt.PI2;
+	lAng += mt.PI2;
+	rAng += mt.PI2;
 	
 	// If the angle is close to the left extreme of the view,
 	// then set the object at a negative position
@@ -409,8 +388,11 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	if (x > 1000) return null; //If the object is too far, then don't draw it
 	
 	// Get the distance between the positions
-	var dist = Math.getDistance(posA, posB);
-	dist *= Math.cos(angB);
+	var dist = mt.getDistance(posA, posB);
+	
+	var cos = mt.cos(angB);
+	if (cos < 0) return null;
+	dist *= cos;
 	
 	// Get the scale of the object
 	var scale = this.heightR / dist;
@@ -419,7 +401,7 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var sRLine = this.rBase * this.z;
 	var rLine = sRLine / dist;
 	
-	x = Math.round(x);
+	x = mt.round(x);
 	return {x: x, dist: dist, scale: scale, angle: angle, zScale: rLine};
 };
 
@@ -428,9 +410,11 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	and draw the ones that can be draw
 ===================================================*/
 RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ direction, /*Array*/ instances){
+	var mt = Math;
+	
 	// Get the extremes of the field of view
-	var lAng = (direction + this.fov + Math.PI2) % Math.PI2;
-	var rAng = (direction - this.fov + Math.PI2) % Math.PI2;
+	var lAng = (direction + this.fov + mt.PI2) % mt.PI2;
+	var rAng = (direction - this.fov + mt.PI2) % mt.PI2;
 	
 	// The instances that are going to be draw (far to near)
 	var sortedIns = [];
@@ -441,8 +425,8 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		// If it's not visible then don't draw it
 		if (!ins.visible) continue;
 		
-		var xx = Math.abs(ins.position.a - position.a);
-		var yy = Math.abs(ins.position.b - position.b);
+		var xx = mt.abs(ins.position.a - position.a);
+		var yy = mt.abs(ins.position.b - position.b);
 		
 		// If its too far, then don't draw it
 		if (xx > 10 || yy > 10) continue;
@@ -452,7 +436,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		if (!ray) continue;
 		
 		// Center the object in its position
-		ray.x = Math.round(ray.x - ray.scale / 2);
+		ray.x = mt.round(ray.x - ray.scale / 2);
 		var sorI = {ins: ins, scale: ray.scale, dist: ray.dist, x: ray.x, angle: ray.angle, type: 0, zScale: ray.zScale};
 		var added = false;
 		
@@ -479,9 +463,11 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 	call for a draw to the ones that can
 ===================================================*/
 RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ direction, /*Array*/ doors){
+	var mt = Math;
+	
 	// Calculate the extremes of the field of view
-	var lAng = (direction + this.fov + Math.PI2) % Math.PI2;
-	var rAng = (direction - this.fov + Math.PI2) % Math.PI2;
+	var lAng = (direction + this.fov + mt.PI2) % mt.PI2;
+	var rAng = (direction - this.fov + mt.PI2) % mt.PI2;
 	
 	// Doors that are going to be draw (far to near)
 	var sortedIns = [];
@@ -489,8 +475,8 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 	for (var i=0,len=doors.length;i<len;i++){
 		var ins = doors[i];
 		
-		var xx = Math.abs(ins.position.a - position.a);
-		var yy = Math.abs(ins.position.b - position.b);
+		var xx = mt.abs(ins.position.a - position.a);
+		var yy = mt.abs(ins.position.b - position.b);
 		
 		// If it's too far or too near, don't draw it
 		if (xx > 10 || yy > 10) continue;
@@ -533,6 +519,7 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 ===================================================*/
 RaycastRender.prototype.drawDoor = function(ins){
 	var hv = (this.size.b / 2);
+	var mt = Math;
 	// Variables for position, texture position, and scale of the door.
 	var xx, x1, x2, y1, y2, d, s, ss, dis, size, sc, tex, tx, color, j, ins, ol ,or, rel, texScale;
 	color = Colors.textures;
@@ -560,8 +547,8 @@ RaycastRender.prototype.drawDoor = function(ins){
 	
 	// Get the scale variance between horizontal pixels
 	dis = (ins.dist < ins.dist2)? ins.dist : ins.dist2;
-	ss = Math.abs(ins.scale2 - ins.scale1) / (x2 - x1);
-	zs = Math.abs(ins.zScale2 - ins.zScale1) / (x2 - x1);
+	ss = mt.abs(ins.scale2 - ins.scale1) / (x2 - x1);
+	zs = mt.abs(ins.zScale2 - ins.zScale1) / (x2 - x1);
 	
 	var alpha = this.getAlphaByDistance(dis);
 	
@@ -583,8 +570,8 @@ RaycastRender.prototype.drawDoor = function(ins){
 			sc = s + (ss * xx * d);
 			
 			// Get the vertical position of this line
-			y2 = Math.round(hv + zSc / 2) + this.zAngle + height;
-			y1 = Math.round(y2 - sc);
+			y2 = mt.round(hv + zSc / 2) + this.zAngle + height;
+			y1 = mt.round(y2 - sc);
 			
 			// Get the texture line
 			tx = ((xx / size) * tex.width) << 0;
@@ -603,12 +590,13 @@ RaycastRender.prototype.drawDoor = function(ins){
 ===================================================*/
 RaycastRender.prototype.drawInstance = function(ins){
 	// Variables for getting the position, texture, and color of the instance
+	var mt = Math;
 	var y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
 		
 	var height = this.z - 32;
 	var sizeH = (this.size.b / 2) << 0;
-	y2 = Math.round(sizeH + ins.zScale / 2) + this.zAngle + height;
-	y1 = Math.round(y2 - ins.scale);
+	y2 = mt.round(sizeH + ins.zScale / 2) + this.zAngle + height;
+	y1 = mt.round(y2 - ins.scale);
 	
 	// Get the texture of the instance
 	texInfo = ins.ins.getTexture(ins.angle);
@@ -621,7 +609,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 	var alpha = this.getAlphaByDistance(ins.dist);
 	
 	// If the instance is outside the view, then don't draw it
-	if (Math.abs(ins.scale) >= 1000) return;
+	if (mt.abs(ins.scale) >= 1000) return;
 	if (ins.x + ins.scale < 0) return;
 	else if (ins.x > this.size.a) return;
 	
