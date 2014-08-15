@@ -12,8 +12,12 @@ function MapManager(/*Game*/ game, /*Array*/ map, /*Object*/ player){
 	this.map = map;
 	this.floor = null;
 	this.ceil = null;
+	this.baseHeight = 1;
 	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
 	this.waterTiles = [];
+	
+	this.sectorInstances = [];
+	this.sectorDoors = [];
 }
 
 MapManager.prototype.checkIfWater = function(/*Int*/ x, /*Int*/ y){
@@ -76,15 +80,15 @@ MapManager.prototype.isTextureSolid = function(/*String*/ textureCode){
 ===================================================*/
 MapManager.prototype.getInstanceAt = function(/*Int*/ x, /*Int*/ y){
 	// Look for instances
-	for (var i=0,len=this.instances.length;i<len;i++){
-		var ins = this.instances[i];
+	for (var i=0,len=this.sectorInstances.length;i<len;i++){
+		var ins = this.sectorInstances[i];
 		if ((ins.position.a << 0) == x && (ins.position.b << 0) == y)
 			return ins;
 	}
 	
 	// Look for doors
-	for (var i=0,len=this.doors.length;i<len;i++){
-		var ins = this.doors[i];
+	for (var i=0,len=this.sectorDoors.length;i<len;i++){
+		var ins = this.sectorDoors[i];
 		if ((ins.position.a << 0) == x && (ins.position.b << 0) == y)
 			return ins;
 	}
@@ -229,6 +233,9 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 MapManager.prototype.loop = function(){
 	this.player.loop();
 	
+	this.sectorInstances = [];
+	this.sectorDoors = [];
+	
 	for (var i=0,len=this.instances.length;i<len;i++){
 		var ins = this.instances[i];
 		if (ins.loop) ins.loop();
@@ -237,11 +244,21 @@ MapManager.prototype.loop = function(){
 			this.instances.splice(i, 1);
 			len--;
 			i--;
+		}else{
+			var xx = Math.abs(ins.position.a - this.player.position.a);
+			var yy = Math.abs(ins.position.b - this.player.position.b);
+			if (xx < 10 && yy < 10)
+				this.sectorInstances.push(ins);
 		}
 	}
 	
 	for (var i=0,len=this.doors.length;i<len;i++){
 		var ins = this.doors[i];
 		if (ins.loop) ins.loop();
+		
+		var xx = Math.abs(ins.position.a - this.player.position.a);
+		var yy = Math.abs(ins.position.b - this.player.position.b);
+		if (xx < 10 && yy < 10)
+			this.sectorDoors.push(ins);
 	}
 };

@@ -16,6 +16,7 @@ function Door(position, direction, texture, params, mapManager){
 	
 	this.leftPos = null;
 	this.rightPos = null;
+	this.visible = true;
 	
 	if (direction == "H"){
 		this.leftPos = vec2((position.a << 0), position.b);

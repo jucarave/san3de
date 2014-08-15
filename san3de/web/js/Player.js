@@ -134,6 +134,13 @@ Player.prototype.checkInstance = function(){
 		if (ins != null && ins.active){
 			ins.active();
 		}
+	}else if (game.getKeyPressed(0)){
+		var xTo = (this.position.a + Math.cos(this.direction) * 0.9) << 0;
+		var yTo = (this.position.b - Math.sin(this.direction) * 0.9) << 0;
+		var ins = this.mapManager.getInstanceAt(xTo, yTo);
+		if (ins != null && ins.active && !ins.visible){
+			ins.active();
+		}
 	}
 };
 

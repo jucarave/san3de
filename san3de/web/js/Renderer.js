@@ -286,6 +286,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var rel = this.floorR * this.z / cosB;
 		// Do the floor casting and drawing
 		for (var f=fry;f<this.size.b;f++){
+			var y = f;
 			var py = mt.abs(sizeH - f + this.zAngle + height);
 			var floorD = (rel / py);
 			var fx = (p.a + vAng.a * floorD);
@@ -294,7 +295,9 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 			var cx = (fx << 0);
 			var cy = (fy << 0);
 			if (!floor[cy]) continue;
-			floorText = this.game.getTexture(floor[cy][cx]);
+			
+			var tile = floor[cy][cx];
+			floorText = this.game.getTexture(tile);
 			
 			if (!floorText){ continue; }
 			
@@ -312,7 +315,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 				}
 				if (alp > 255) alp = 255;
 			
-				this.plot(i, f, cf, alp);
+				this.plot(i, y, cf, alp);
 			}
 		}
 		
@@ -356,8 +359,8 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	}
 	
 	// Call the other castings
-	var doors  = this.doorCasting(p, d, mapManager.doors);
-	var instances = this.objectCasting(p, d, mapManager.instances);
+	var doors  = this.doorCasting(p, d, mapManager.sectorDoors);
+	var instances = this.objectCasting(p, d, mapManager.sectorInstances);
 	
 	// Order and draw the instances
 	this.renderInstances(instances, doors);
@@ -686,9 +689,12 @@ RaycastRender.prototype.renderInstances = function(instances, doors){
 		if (ins.type == 1){ this.drawDoor(ins); }
 	}
 	
+	this.game.keys[0] = 0;
 	if (this.activeInstance != null){
 		this.game.getMouseButtonPressed();
 		this.activeInstance.active();
+	}else if(this.game.getMouseButtonPressed()){
+		this.game.keys[0] = 1;
 	}
 };
 
