@@ -38,6 +38,12 @@ function RaycastRender(/*ImageData*/ dataCanvas, /*Int*/ fieldOfVision, /*Int*/ 
 	this.z = this.baseHeight;
 	this.zAngle = 0;
 	this.vspeed = 0;
+	this.activeInstance = null;
+	
+	// Saving a little of memory for when the player is not rotating
+	this.sinList = [];
+	this.cosList = [];
+	this.lastDir = -1;
 	
 	// Array of distances (one per column)
 	this.matDist = new Array(this.size.a);
@@ -141,6 +147,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	var last = 0;							// Orientation of the last Ray (1: Horizontal, 2: Vertical)
 	var lastTex = null;						// Last texture that was draw
 	
+	this.activeInstance = null;
 	this.z = (mapManager.player.z + mapManager.player.jogZ.a) << 0;
 	
 	var sizeH = (this.size.b / 2) << 0;
@@ -152,7 +159,12 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	this.lookUpDown(mapManager.game);
 	
 	for (var i=0;i<this.size.a;i++){
-		var vAng = vec2(mt.cos(ang), -mt.sin(ang));			// Orientation of the casted angle
+		if (d != this.lastDir){ 
+			this.cosList[i] = mt.cos(ang);
+			this.sinList[i] = mt.sin(ang);
+		}
+		
+		var vAng = vec2(this.cosList[i], -this.sinList[i]); // Orientation of the casted angle
 		var rayA = p.clone();							// Position of the horizontal ray
 		var rayB = p.clone();							// Position of the vertical ray
 		var jumA = vec2(1,1);							// Jumps of the horizontal ray
@@ -160,13 +172,13 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		var dist = vec2(-1,-1);							// Distance of both rays
 		var rayP = null;								// Position of the found wall
 		var mDist = -1;									// Distance of the found wall
-		var tan = mt.tan(ang);								// Tangent of the casted angle
+		var tan = mt.tan(ang);							// Tangent of the casted angle
 		var hit = false;								// Had both rays hit?
 		var foundA = false, foundB = false;				// Had any of the rays hit?
 		var wx, wy;										// Map x, y
 		var line = 0;									// Size of the wall
-		var angB = mt.abs(d - ang);					// Beta angle (to correct the eyefish)
-		var cosB = mt.cos(angB);							// Cosine of the beta angle (used mostly in floorCasting)
+		var angB = mt.abs(d - ang);						// Beta angle (to correct the eyefish)
+		var cosB = mt.cos(angB);						// Cosine of the beta angle (used mostly in floorCasting)
 		var tex, texA, texB;							// Horizontal, Vertical and found texture
 		var tx;											// Horizontal position in the texture
 		var colorH = null;								// Determines if the colors are normal or shadowed
@@ -352,6 +364,8 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	
 	// Copy the 8Bit buffer into the 8Bit data
 	this.canvas.data.set(this.buf8);
+	
+	this.lastDir = d;
 };
 
 /*===================================================
@@ -573,6 +587,13 @@ RaycastRender.prototype.drawDoor = function(ins){
 			y2 = mt.round(hv + zSc / 2) + this.zAngle + height;
 			y1 = mt.round(y2 - sc);
 			
+			if (ins.ins.openable && this.game.mouseB == 1 && ins.dist <= 1.0){
+				var cursor = this.game.cursorPos;
+				if (cursor.a > x1 && cursor.a < x2 && cursor.b > y1 && cursor.b < y2){
+					this.activeInstance = ins.ins;
+				}
+			}
+			
 			// Get the texture line
 			tx = ((xx / size) * tex.width) << 0;
 			if (texScale == -1) tx = tex.width - tx - 1;
@@ -612,6 +633,13 @@ RaycastRender.prototype.drawInstance = function(ins){
 	if (mt.abs(ins.scale) >= 1000) return;
 	if (ins.x + ins.scale < 0) return;
 	else if (ins.x > this.size.a) return;
+	
+	if (ins.ins.active && this.game.mouseB == 1 && ins.dist <= 1.0){
+		var cursor = this.game.cursorPos;
+		if (cursor.a > ins.x && cursor.a < ins.x+ins.scale && cursor.b > y1 && cursor.b < y2){
+			this.activeInstance = ins.ins;
+		}
+	}
 	
 	for (j=0;j<ins.scale;j++){
 		x = ins.x + j;
@@ -656,6 +684,11 @@ RaycastRender.prototype.renderInstances = function(instances, doors){
 		if (ins.dist > 15 || ins.dist < 0.01) continue;
 		if (ins.type == 0){ this.drawInstance(ins); }else 
 		if (ins.type == 1){ this.drawDoor(ins); }
+	}
+	
+	if (this.activeInstance != null){
+		this.game.getMouseButtonPressed();
+		this.activeInstance.active();
 	}
 };
 
