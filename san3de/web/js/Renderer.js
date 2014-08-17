@@ -408,9 +408,11 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var dist = mt.getDistance(posA, posB);
 	var cos = mt.cos(angB);
 	var cDist = dist * cos;
+	var onBack = false;
 	if (cDist < 0){ 
 		if (!drawBehind) return;
 		cDist = dist * (Math.abs(cos));
+		var onBack = true;
 	}
 	
 	// Get the scale of the object
@@ -421,7 +423,7 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var rLine = sRLine / cDist;
 	
 	x = mt.round(x);
-	return {x: x, dist: cDist, scale: scale, angle: angle, zScale: rLine};
+	return {x: x, dist: cDist, scale: scale, angle: angle, zScale: rLine, onBack: onBack};
 };
 
 /*===================================================
@@ -511,6 +513,8 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		pos = ins.rightPos;
 		var ray2 = this.castTo(position, pos, lAng, rAng, direction, drawBehind);
 		if (!ray2) continue;
+		
+		if (ray1.onBack && ray2.onBack) continue;
 		
 		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1, zScale1: ray1.zScale, zScale2: ray2.zScale};
 		var added = false;
