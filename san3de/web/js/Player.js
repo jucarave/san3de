@@ -41,24 +41,32 @@ Player.prototype.jog = function(){
 ===================================================*/
 Player.prototype.moveTo = function(/*float*/ xTo, /*float*/ yTo, /*Boolean*/ sliding){
 	var spd = this.movementSpd * 2;
-	var xx = (this.position.a + xTo * spd) << 0;
-	var yy = (this.position.b) << 0;
+	var xx = (this.position.a + xTo * spd);
+	var yy = (this.position.b);
+	
+	var xxx = (xx) << 0;
+	var yyy = (yy) << 0;
+	
 	var pd = (this.z == 10)? 3 : 1;
 	if (sliding) pd *= 2;
 	
 	// Check if there is a solid wall at the position
-	if (!this.mapManager.isSolid(xx, yy)){
-		var ins = this.mapManager.getInstanceAt(xx, yy);
-		if (!ins || !ins.isSolid())
+	if (!this.mapManager.isSolid(xxx, yyy)){
+		var ins = this.mapManager.getInstanceAt(xxx, yyy);
+		if (!ins || !ins.isSolid(xx, yy))
 			this.position.a += xTo * (this.movementSpd / pd);
 	}
 	
 	// Check if there is an instance at the position
-	xx = (this.position.a) << 0;
-	yy = (this.position.b + yTo * spd) << 0;
-	if (!this.mapManager.isSolid(xx, yy)){
-		var ins = this.mapManager.getInstanceAt(xx, yy);
-		if (!ins || !ins.isSolid())
+	xx = (this.position.a);
+	yy = (this.position.b + yTo * spd);
+	
+	xxx = (xx) << 0;
+	yyy = (yy) << 0;
+	
+	if (!this.mapManager.isSolid(xxx, yyy)){
+		var ins = this.mapManager.getInstanceAt(xxx, yyy);
+		if (!ins || !ins.isSolid(xx, yy))
 			this.position.b += yTo * (this.movementSpd / pd);
 	}
 	

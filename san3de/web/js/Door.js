@@ -4,7 +4,7 @@ function Door(position, direction, texture, params, mapManager){
 	this.mapManager = mapManager;
 	this.texture = texture;
 	
-	this.solid = true;
+	this.solid = false;
 	this.imageIndex = 0;
 	this.imgSpeed = 1/2;
 	this.opening = 0;
@@ -19,9 +19,11 @@ function Door(position, direction, texture, params, mapManager){
 	this.visible = true;
 	
 	if (direction == "H"){
+		this.solid = true;
 		this.leftPos = vec2((position.a << 0), position.b);
 		this.rightPos = vec2((1 + position.a << 0), position.b);
 	}else if (direction == "V"){
+		this.solid = true;
 		this.leftPos = vec2(position.a, (position.b << 0));
 		this.rightPos = vec2(position.a, (1 + position.b << 0));
 	}else if (direction == "UR"){
@@ -54,8 +56,28 @@ Door.prototype.getTexture = function(){
 	return this.texture + img;
 };
 
-Door.prototype.isSolid = function(){
-	return this.solid;
+Door.prototype.isSolid = function(x, y){
+	if (this.direction == "V" || this.direction == "H"){
+		return this.solid;
+	}else{
+		var xx, yy;
+
+		xx = 0; yy = 0;
+		switch (this.direction){
+			case "UR":
+				xx = x - this.leftPos.a;
+				yy = y - this.leftPos.b;
+				if (yy <= xx) return true;
+			break;
+			case "DR":
+				xx = x - this.rightPos.a;
+				yy = this.rightPos.b - y;
+				if (yy - 0.3 <= xx) return true;
+			break;
+		}
+		
+		return false;
+	}
 };
 
 Door.prototype.active = function(){

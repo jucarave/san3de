@@ -376,7 +376,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	horizontal position in the screen as well
 	the size and distance of the object
 ===================================================*/
-RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*/ lAng, /*float*/ rAng, /*float*/ dir){
+RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*/ lAng, /*float*/ rAng, /*float*/ dir, /*Boolean*/ drawBehind){
 	var mt = Math;
 	
 	// Get the angle between the two objects
@@ -401,25 +401,27 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	}
 	
 	// Get the x position in the screen
-	var x = (sl / this.fullFov) * this.size.a;
+	var x = ((sl / this.fullFov) * this.size.a);
 	if (x > 1000) return null; //If the object is too far, then don't draw it
 	
 	// Get the distance between the positions
 	var dist = mt.getDistance(posA, posB);
-	
 	var cos = mt.cos(angB);
-	if (cos < 0) return null;
-	dist *= cos;
+	var cDist = dist * cos;
+	if (cDist < 0){ 
+		if (!drawBehind) return;
+		cDist = dist * (Math.abs(cos));
+	}
 	
 	// Get the scale of the object
-	var scale = this.heightR / dist;
+	var scale = this.heightR / cDist;
 	
 	// Get the zPosition scale of the object
 	var sRLine = this.rBase * this.z;
-	var rLine = sRLine / dist;
+	var rLine = sRLine / cDist;
 	
 	x = mt.round(x);
-	return {x: x, dist: dist, scale: scale, angle: angle, zScale: rLine};
+	return {x: x, dist: cDist, scale: scale, angle: angle, zScale: rLine};
 };
 
 /*===================================================
@@ -449,7 +451,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		if (xx > 10 || yy > 10) continue;
 			
 		// Cast a ray to the object
-		var ray = this.castTo(position, ins.position, lAng, rAng, direction);
+		var ray = this.castTo(position, ins.position, lAng, rAng, direction, false);
 		if (!ray) continue;
 		
 		// Center the object in its position
@@ -497,16 +499,17 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		
 		// If it's too far or too near, don't draw it
 		if (xx > 10 || yy > 10) continue;
-		if (xx < 0.5 && yy < 0.5) continue;
+		
+		var drawBehind = (!(ins.direction == "H" || ins.direction == "V"));
 		
 		// Cast a ray to the left extreme of the door
 		pos = ins.leftPos;
-		var ray1 = this.castTo(position, pos, lAng, rAng, direction);
+		var ray1 = this.castTo(position, pos, lAng, rAng, direction, drawBehind);
 		if (!ray1) continue;
 		
 		// Cast a ray to the right extreme of the door
 		pos = ins.rightPos;
-		var ray2 = this.castTo(position, pos, lAng, rAng, direction);
+		var ray2 = this.castTo(position, pos, lAng, rAng, direction, drawBehind);
 		if (!ray2) continue;
 		
 		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1, zScale1: ray1.zScale, zScale2: ray2.zScale};
@@ -535,6 +538,7 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 	of vision.
 ===================================================*/
 RaycastRender.prototype.drawDoor = function(ins){
+	if (ins.dist > 15) return;
 	var hv = (this.size.b / 2);
 	var mt = Math;
 	// Variables for position, texture position, and scale of the door.
@@ -613,6 +617,8 @@ RaycastRender.prototype.drawDoor = function(ins){
 	of vision
 ===================================================*/
 RaycastRender.prototype.drawInstance = function(ins){
+	if (ins.dist > 15 || ins.dist < 0.01) return;
+	
 	// Variables for getting the position, texture, and color of the instance
 	var mt = Math;
 	var y1, y2, texInfo, tex, color, rel, ol, or, j, x, tx;	
@@ -684,7 +690,6 @@ RaycastRender.prototype.renderInstances = function(instances, doors){
 	// Draw the orderer instances according to their type
 	for (var i=0,len=instances.length;i<len;i++){
 		var ins = instances[i];
-		if (ins.dist > 15 || ins.dist < 0.01) continue;
 		if (ins.type == 0){ this.drawInstance(ins); }else 
 		if (ins.type == 1){ this.drawDoor(ins); }
 	}
