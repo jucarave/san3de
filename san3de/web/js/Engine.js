@@ -204,6 +204,7 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 			var floor = null;
 			var ceil = null;
 			var map = null;
+			var height = 1;
 			for (var i=0,len=text.length;i<len;i++){
 				var line = text[i].trim();
   				if (line == "") continue; 
@@ -235,6 +236,8 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 					player.x = parseInt(params[0].trim(), 10);
 					player.y = parseInt(params[1].trim(), 10);
 					player.d = parseFloat(params[2].trim());
+				}else if (type == 0x05){ // Base height
+					height = parseInt(data, 10);
 				}else if (type >= 0x10 && type < 0x30){ // Textures Data
 					var params = data.split(" ");
 					var tex = mp.parseTexture(params);
@@ -256,6 +259,7 @@ Engine.prototype.loadKTD = function(/*String*/ url, /*Boolean*/ hasShadow, /*Fun
 			ktd.floor = floor;
 			ktd.ceil = ceil;
 			ktd.map = map;
+			ktd.height = height;
 			
 			if (callback) callback(ktd);
 		}

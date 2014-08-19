@@ -94,7 +94,7 @@ RaycastRender.prototype.plot = function(/*Int*/ x, /*Int*/ y, /*Array*/ color, /
 	Copy a line of a texture into a column of 
 	the renderer
 ===================================================*/
-RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Int*/ alpha){
+RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /*Int*/ tx, /*Texture*/ texture, /*ColorArray*/ colorHolder, /*Int*/ alpha, /*Int*/ vr){
 	var size = y2 - y1;
 	var aC = Colors.alphaC;	// Pixels of this color wont be draw
 	tx = (tx) << 0;
@@ -111,7 +111,7 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	var ty, ind, c;
 	for (var i=sy;i<ey;i++){
 		// Get the vertical position of the texture
-		ty = ((i - y1) / size * (texture.height - 1)) << 0;
+		ty = ((i - y1) / size * (texture.height * vr)) % (texture.height - 1) << 0;
 		if (ty < texture.offsetT || ty >= texture.offsetB){
 			continue;
 		}
@@ -269,13 +269,13 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		line = this.heightR / mDist;
 		var height = this.z - 32;
 		var y2 = mt.round((this.size.b / 2) + rLine / 2) + this.zAngle + height;
-		var y1 = mt.round(y2 - line);
+		var y1 = mt.round(y2 - (line * mapManager.height));
 		this.matDist[i] = mDist;
 		
 		var alpha = this.getAlphaByDistance(mDist);
 		
 		// Copy the texture data into memory
-		this.fillLine(i,y1,y2,tx,tex,colorH,alpha);
+		this.fillLine(i,y1,y2,tx,tex,colorH,alpha,mapManager.height);
 		
 		// The first horline must be black
 		var c = Colors.blackC;
@@ -321,7 +321,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		}
 		
 		var fry = y1 - 1;
-		var z2 = 64 - this.z;
+		var z2 = (64 * mapManager.height) - this.z;
 		rel = this.floorR * z2 / cosB;
 		// Do the ceil casting and drawing
 		for (var f=fry;f>=0;f--){
@@ -362,7 +362,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 	}
 	
 	// Call the other castings
-	var doors  = this.doorCasting(p, d, mapManager.sectorDoors);
+	var doors  = this.doorCasting(p, d, mapManager.sectorDoors, mapManager.height);
 	var instances = this.objectCasting(p, d, mapManager.sectorInstances);
 	
 	// Order and draw the instances
@@ -486,7 +486,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 	Cast a ray to all the doors that are near and
 	call for a draw to the ones that can
 ===================================================*/
-RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ direction, /*Array*/ doors){
+RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ direction, /*Array*/ doors, /*Int*/ angledWallsHeight){
 	var mt = Math;
 	
 	// Calculate the extremes of the field of view
@@ -523,7 +523,9 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		
 		if (ray1.onBack && ray2.onBack) continue;
 		
-		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1, zScale1: ray1.zScale, zScale2: ray2.zScale};
+		var height = (drawBehind)? angledWallsHeight : 1;
+		
+		var sorI = {ins: ins, scale1: ray1.scale, dist: ray1.dist, x1: ray1.x, scale2: ray2.scale, dist2: ray2.dist, x2: ray2.x, type: 1, zScale1: ray1.zScale, zScale2: ray2.zScale, height: height};
 		var added = false;
 		
 		// Check if there is any near door, then put it behind
@@ -603,7 +605,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 			
 			// Get the vertical position of this line
 			y2 = mt.round(hv + zSc / 2) + this.zAngle + height;
-			y1 = mt.round(y2 - sc);
+			y1 = mt.round(y2 - (sc * ins.height));
 			
 			if (ins.ins.openable && this.game.mouseB == 1 && ins.dist <= 1.0){
 				var cursor = this.game.cursorPos;
@@ -618,7 +620,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 			if (tx < 0) tx = 0;
 		
 			// Copy the texture line into the Buffer
-			this.fillLine(j,y1,y2,tx,tex,color,alpha);
+			this.fillLine(j,y1,y2,tx,tex,color,alpha,ins.height);
 		}
 	}
 };
@@ -674,7 +676,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 				else tx -= tex.offsetL;
 				
 				// Copy the line of the texture into memory
-				this.fillLine(x,y1,y2,tx,tex,color,alpha);
+				this.fillLine(x,y1,y2,tx,tex,color,alpha,1);
 			}
 		}
 	}
