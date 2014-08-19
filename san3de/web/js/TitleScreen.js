@@ -7,7 +7,7 @@ TitleScreen.prototype.step = function(){
 	if (this.game.getKeyPressed(13) || this.game.getMouseButtonPressed()){
 		this.game.loadMap("kramBuild.ktd");
 		this.game.scene = null;
-		this.game.playMusic("descent");
+		//this.game.playMusic("descent");
 	}
 };
 

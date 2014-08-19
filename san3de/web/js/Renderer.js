@@ -297,6 +297,7 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 			if (!floor[cy]) continue;
 			
 			var tile = floor[cy][cx];
+			if (mapManager.isAnimated(tile)) tile += (mapManager.worldFrame << 0);
 			floorText = this.game.getTexture(tile);
 			
 			if (!floorText){ continue; }
@@ -331,8 +332,10 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 			
 			var cx = (fx << 0);
 			var cy = (fy << 0);
-			if (!floor[cy]) continue;
-			ceilText = this.game.getTexture(ceil[cy][cx]);
+			if (!ceil[cy]) continue;
+			var tile = ceil[cy][cx];
+			if (mapManager.isAnimated(tile)) tile += (mapManager.worldFrame << 0);
+			ceilText = this.game.getTexture(tile);
 			
 			if (!ceilText){ continue; }
 			
@@ -409,9 +412,9 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var cos = mt.cos(angB);
 	var cDist = dist * cos;
 	var onBack = false;
-	if (cDist < 0){ 
-		if (!drawBehind) return;
-		cDist = dist * (Math.abs(cos));
+	if (cDist <= 0 && !drawBehind) return;
+	if (angB >= 1.03 && drawBehind){ 
+		cDist = dist * (2 / (angB + 3));
 		var onBack = true;
 	}
 	
@@ -509,10 +512,14 @@ RaycastRender.prototype.doorCasting = function(/*Vec2*/ position, /*float*/ dire
 		var ray1 = this.castTo(position, pos, lAng, rAng, direction, drawBehind);
 		if (!ray1) continue;
 		
+		if (drawBehind && ray1.angle < rAng  && ray1.angle > rAng - Math.PI_2) continue;
+		
 		// Cast a ray to the right extreme of the door
 		pos = ins.rightPos;
 		var ray2 = this.castTo(position, pos, lAng, rAng, direction, drawBehind);
 		if (!ray2) continue;
+		
+		if (drawBehind && ray2.angle > lAng  && ray2.angle < lAng + Math.PI_2) continue;
 		
 		if (ray1.onBack && ray2.onBack) continue;
 		

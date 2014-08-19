@@ -15,10 +15,18 @@ function MapManager(/*Game*/ game, /*Array*/ map, /*Object*/ player){
 	this.baseHeight = 1;
 	this.player = new Player(vec2(player.x + 0.5, player.y + 0.5), player.d, this);
 	this.waterTiles = [];
+	this.animatedTiles = [];
+	
+	this.worldFrame = 0;
+	this.worldFrameSpeed = 1 / 8;
 	
 	this.sectorInstances = [];
 	this.sectorDoors = [];
 }
+
+MapManager.prototype.isAnimated = function(/*Int*/ tileId){
+	return (this.animatedTiles.indexOf(tileId) != -1);
+};
 
 MapManager.prototype.checkIfWater = function(/*Int*/ x, /*Int*/ y){
 	if (!this.floor[y]) return false;
@@ -222,7 +230,11 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
 		else if (type == 4){ this.instances.push(new Item(vec, ins[3], ins.splice(4), this)); }
 		else if (type == 5){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
-		else if (type == 6){ this.waterTiles.push(this.game.getTextureIdByCode(ins[3])); }
+		else if (type == 6){ 
+			var tileId = this.game.getTextureIdByCode(ins[3] + "_0"); 
+			this.waterTiles.push(tileId); 
+			this.animatedTiles.push(tileId);
+		}
 	}
 };
 
@@ -261,4 +273,7 @@ MapManager.prototype.loop = function(){
 		if (xx < 10 && yy < 10)
 			this.sectorDoors.push(ins);
 	}
+	
+	this.worldFrame += this.worldFrameSpeed;
+	if (this.worldFrame >= 2) this.worldFrame = 0;
 };
