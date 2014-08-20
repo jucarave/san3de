@@ -222,16 +222,17 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		var type = parseInt(ins[0]);
 		var x = parseInt(ins[1]);
 		var y = parseInt(ins[2]);
-		var vec = vec2(x + 0.5, y + 0.5);
+		var z = parseInt(ins[3]);
+		var vec = vec3(x + 0.5, y + 0.5, z);
 		
-		if (type == 0){ this.instances.push(new Billboard(vec, ins[3], ins.splice(4), this)); }
-		else if (type == 1){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
-		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[3]), ins[4], this)); }
+		if (type == 0){ this.instances.push(new Billboard(vec, ins[4], ins.splice(5), this)); }
+		else if (type == 1){ this.doors.push(new Door(vec, ins[5], ins[4], ins.splice(6), this)); }
+		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[4]), ins[5], this)); }
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
-		else if (type == 4){ this.instances.push(new Item(vec, ins[3], ins.splice(4), this)); }
-		else if (type == 5){ this.doors.push(new Door(vec, ins[4], ins[3], ins.splice(5), this)); }
+		else if (type == 4){ this.instances.push(new Item(vec, ins[4], ins.splice(5), this)); }
+		else if (type == 5){ this.doors.push(new Door(vec, ins[5], ins[4], ins.splice(6), this)); }
 		else if (type == 6){ 
-			var tileId = this.game.getTextureIdByCode(ins[3] + "_0"); 
+			var tileId = this.game.getTextureIdByCode(ins[4] + "_0"); 
 			this.waterTiles.push(tileId); 
 			this.animatedTiles.push(tileId);
 		}

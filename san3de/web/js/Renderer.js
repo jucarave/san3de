@@ -111,7 +111,11 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 	var ty, ind, c;
 	for (var i=sy;i<ey;i++){
 		// Get the vertical position of the texture
-		ty = ((i - y1) / size * (texture.height * vr)) % (texture.height - 1) << 0;
+		if (vr > 1)
+			ty = ((i - y1) / size * (texture.height * vr)) % (texture.height - 1) << 0;
+		else
+			ty = ((i - y1) / size * (texture.height - 1)) << 0;
+			
 		if (ty < texture.offsetT || ty >= texture.offsetB){
 			continue;
 		}
@@ -604,7 +608,7 @@ RaycastRender.prototype.drawDoor = function(ins){
 			sc = s + (ss * xx * d);
 			
 			// Get the vertical position of this line
-			y2 = mt.round(hv + zSc / 2) + this.zAngle + height;
+			y2 = mt.round(hv + zSc / 2) + this.zAngle + height - (sc * ins.ins.position.c);
 			y1 = mt.round(y2 - (sc * ins.height));
 			
 			if (ins.ins.openable && this.game.mouseB == 1 && ins.dist <= 1.0){
@@ -638,7 +642,7 @@ RaycastRender.prototype.drawInstance = function(ins){
 		
 	var height = this.z - 32;
 	var sizeH = (this.size.b / 2) << 0;
-	y2 = mt.round(sizeH + ins.zScale / 2) + this.zAngle + height;
+	y2 = mt.round(sizeH + ins.zScale / 2) + this.zAngle + height - (ins.scale * ins.ins.position.c);
 	y1 = mt.round(y2 - ins.scale);
 	
 	// Get the texture of the instance

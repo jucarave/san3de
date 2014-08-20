@@ -1,9 +1,10 @@
 /*===================================================
 	Simple structure that holds two float values
 ===================================================*/
-function Vec2(/*float*/ a, /*float*/ b){
+function Vec2(/*float*/ a, /*float*/ b, /*float*/ c){
 	this.a = a;
 	this.b = b;
+	this.c = c;
 }
 
 /*===================================================
@@ -65,5 +66,13 @@ Vec2.prototype.clone = function(){
 	the code
 ===================================================*/
 function vec2(/*[Vec2,float]*/ a, /*float*/ b){
-	return new Vec2(a, b);
+	return new Vec2(a, b, 0);
+}
+
+/*===================================================
+	Simple function to avoid the 'new Vec2' in
+	the code
+===================================================*/
+function vec3(/*[Vec2,float]*/ a, /*float*/ b, /*float*/ c){
+	return new Vec2(a, b, c);
 }
