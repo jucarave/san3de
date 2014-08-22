@@ -15,7 +15,7 @@ function Game(){
 	this.gameSize = vec2(320,200);
 	this.eng = new Engine(this.gameSize, Utils.get("divGame"));
 	this.font = '10px "Arial"';
-	this.console = new Console(10, this.font, this);
+	this.console = new Console(10, 5, this);
 	this.render = new RaycastRender(this.eng.getData(vec2(208,127)), 60, 180, this);
 	this.render.setFog(1, 10);
 	this.renderPos = vec2(16,17);
@@ -49,12 +49,6 @@ function Game(){
 	this.loadImages();
 	this.loadAudios();
 	this.eng.loadKTD("kramBillboards.ktd", false, function(data){ game.parseBillboards(data); });
-	
-	// Shows a welcome message with the game instructions.
-	this.console.addMessage("Welcome to SAN3DE Alpha test!", "unique", "white");
-	this.console.addMessage("Press WASD to move, QE to turn around", "unique", "white");
-	this.console.addMessage("Press Enter to interact with doors and objects", "unique", "white");
-	this.console.addMessage("Have fun!", "unique", "yellow");
 }
 
 /*===================================================
@@ -98,6 +92,16 @@ Game.prototype.loadAudios = function(){
 Game.prototype.loadImages = function(){
 	this.images.titleS = this.eng.loadImage("img/titleScreen.png");
 	this.images.viewport = this.eng.loadImage("img/viewport.png");
+	this.images.scrollFont = this.eng.loadImage("img/scrollFont.png");
+};
+
+Game.prototype.printGreet = function(){
+	// Shows a welcome message with the game instructions.
+	this.console.addSFMessage("WELCOME TO SAN3DE ALPHA TEST!");
+	this.console.addSFMessage("PRESS WASD TO MOVE, QE TO TURN AROUND");
+	this.console.addSFMessage("1/3 TO LOOK UP/DOWN, 2 TO RESTORE");
+	this.console.addSFMessage("CLICK TO INTERACT WITH OBJECTS");
+	this.console.addSFMessage("HAVE FUN!");
 };
 
 /*===================================================
@@ -107,6 +111,9 @@ Game.prototype.loadImages = function(){
 Game.prototype.newGame = function(/*float*/ deltaT){
 	var game = this;
 	if (game.eng.areImagesReady()){
+		game.console.createSpriteFont(game.images.scrollFont, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!,/", 6);
+		game.printGreet();
+		
 		// If all the data is loaded then start the main loop.
 		game.scene = new TitleScreen(game);
 		game.loopGame(deltaT);
@@ -273,11 +280,12 @@ Game.prototype.loopGame = function(/*float*/ deltaT){
 			game.map.loop();
 			game.render.draw(game.getCtx(), game.renderPos);
 			
-			/*this.console.render(8, 192);
-			this.drawInventory();*/
+			/*this.drawInventory();*/
 			
 			var ctx = game.getCtx();
 			ctx.drawImage(game.images.viewport, 0, 0);
+			
+			game.console.render(17, 170);
 		}
 		
 		// Debug: Draw the FPS count

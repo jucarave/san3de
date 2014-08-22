@@ -1,46 +1,67 @@
-function Console(/*Int*/ maxMessages, /*String*/ font, /*Game*/ game){
+function Console(/*Int*/ maxMessages, /*Int*/ limit, /*Game*/ game){
 	this.messages = [];
 	this.maxMessages = maxMessages;
 	this.game = game;
-	this.font = font;
-	this.fontS = parseInt(font.substring(0,font.indexOf("px")), 10);
+	this.limit = limit;
+	
+	this.spriteFont = null;
+	this.listOfChars = null;
+	this.sfContext = null;
+	this.spaceChars = null;
+	this.spaceLines = null;
 }
 
-Console.prototype.addMessage = function(/*String*/ msg, /*String*/ type, /*String*/ color){
-	if (type != "unique" && this.messages.length > 0){
-		var lm = this.messages[this.messages.length - 1];
-		if (lm.type == type){
-			lm.amount += 1;
-			return;
-		}
-	}
-	
-	var m = {
-		msg: msg,
-		type: type,
-		color: color,
-		amount: 1
-	};
-	
-	this.messages.push(m);
-	
-	if (this.messages.length > this.maxMessages){
-		this.messages.splice(0,1);
-	}
-};
 
 Console.prototype.render = function(/*Int*/ x, /*Int*/ y){
 	var s = this.messages.length - 1;
 	var ctx = this.game.getCtx();
-	ctx.font = this.font;
-	for (var i=s;i>=0;i--){
-		var m = this.messages[i];
-		var msg = m.msg;
-		if (m.amount > 1) msg += " (x" + m.amount + ")";
+	
+	ctx.drawImage(this.sfContext.canvas, x, y);
+};
+
+Console.prototype.createSpriteFont = function(/*Image*/ spriteFont, /*String*/ charactersUsed, /*Int*/ verticalSpace){
+	this.spriteFont = spriteFont;
+	this.listOfChars = charactersUsed;
+	this.spaceLines = verticalSpace;
+	
+	var canvas = document.createElement("canvas");
+	canvas.width = 100;
+	canvas.height = 100;
+	this.sfContext = canvas.getContext("2d");
+	this.sfContext.canvas = canvas;
+	
+	this.spaceChars = spriteFont.width / charactersUsed.length;
+};
+
+Console.prototype.addSFMessage = function(/*String*/ message){
+	this.messages.push(message);
+	if (this.messages.length > this.limit){
+		this.messages.splice(0,1);
+	}
+	
+	var c = this.sfContext.canvas;
+	var w = this.spaceChars;
+	var h = this.spriteFont.height;
+	this.sfContext.clearRect(0,0,c.width,c.height);
+	for (var i=0,len=this.messages.length;i<len;i++){
+		var msg = this.messages[i];
+		var x = 0;
+		var y = this.spaceLines * i;
 		
-		ctx.fillStyle = m.color;
-		ctx.fillText(msg, x, y);
+		var mW = msg.length * w;
+		if (mW > c.width) c.width = mW + (2 * w);
 		
-		y -= this.fontS;
+		for (var j=0,jlen=msg.length;j<jlen;j++){
+			var chara = msg.charAt(j);
+			var ind = this.listOfChars.indexOf(chara);
+			
+			if (ind != -1){
+				this.sfContext.drawImage(this.spriteFont,
+					w * ind, 0, w, h,
+					x, y, w, h);
+			}
+			
+			x += w;
+		}
 	}
 };
