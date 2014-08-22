@@ -98,11 +98,11 @@ Door.prototype.active = function(){
 		var key = this.mapManager.getInventoryItem(this.locked);
 		
 		if (key){
-			this.mapManager.logMessage("Unlocked using the " + key.name, "locked_" + this.locked, "aqua");
+			this.mapManager.logMessage("Unlocked using the " + key.name);
 			this.mapManager.removeFromInventory(this.locked, 1);
 			this.locked = null;
 		}else{
-			this.mapManager.logMessage("The door is locked!", "locked_" + this.locked, "yellow");
+			this.mapManager.logMessage("The door is locked!");
 			return;
 		}
 	}

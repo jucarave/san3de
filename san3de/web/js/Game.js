@@ -97,11 +97,11 @@ Game.prototype.loadImages = function(){
 
 Game.prototype.printGreet = function(){
 	// Shows a welcome message with the game instructions.
-	this.console.addSFMessage("WELCOME TO SAN3DE ALPHA TEST!");
-	this.console.addSFMessage("PRESS WASD TO MOVE, QE TO TURN AROUND");
-	this.console.addSFMessage("1/3 TO LOOK UP/DOWN, 2 TO RESTORE");
-	this.console.addSFMessage("CLICK TO INTERACT WITH OBJECTS");
-	this.console.addSFMessage("HAVE FUN!");
+	this.console.addSFMessage("Welcome to SAN3DE alpha test!");
+	this.console.addSFMessage("Press WASD to move, QE to turn around");
+	this.console.addSFMessage("1/3 to look up/down, 2 to restore");
+	this.console.addSFMessage("Click to interact with objects");
+	this.console.addSFMessage("Have fun!");
 };
 
 /*===================================================
@@ -111,7 +111,7 @@ Game.prototype.printGreet = function(){
 Game.prototype.newGame = function(/*float*/ deltaT){
 	var game = this;
 	if (game.eng.areImagesReady()){
-		game.console.createSpriteFont(game.images.scrollFont, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!,/", 6);
+		game.console.createSpriteFont(game.images.scrollFont, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?,./", 6);
 		game.printGreet();
 		
 		// If all the data is loaded then start the main loop.

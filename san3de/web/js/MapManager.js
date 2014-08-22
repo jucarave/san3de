@@ -108,10 +108,10 @@ MapManager.prototype.getInstanceAt = function(/*Int*/ x, /*Int*/ y){
 	Logs a new message to the main console of
 	the game
 ===================================================*/
-MapManager.prototype.logMessage = function(/*String*/ msg, /*String*/ type, /*String*/ color){
+MapManager.prototype.logMessage = function(/*String*/ msg){
 	if (!this.game.console) return;
 	
-	this.game.console.addMessage(msg, type, color);
+	this.game.console.addSFMessage(msg);
 };
 
 /*===================================================
@@ -139,13 +139,13 @@ MapManager.prototype.addItem = function(/*ItemFactory*/ item, /*Int*/ amount){
 		
 		if (!added){
 			var am = (amount > 1)? amount : "a(n)";
-			this.logMessage("Picked " + am +" " + item.name, "pick_" + item.name, "aqua");
+			this.logMessage("Picked " + am +" " + item.name);
 			item.amount = amount;
 			inv.push(item);
 		}
 	}else{
 		for (var i=0;i<amount;i++){
-			this.logMessage("Picked a(n) " + item.name, "pick_" + item.name, "aqua");
+			this.logMessage("Picked a(n) " + item.name);
 			inv.push(item);
 		}
 	}
