@@ -9,9 +9,13 @@ function Enemy(/*Vec2*/ position, /*int*/ direction, /*String*/ textureCode, /*M
 	this.imgNum = 0;
 	this.visible = true;
 	this.inMap = true;
+	this.indexAnimation = null;
 	
 	this.solid = true;
 	this.rotate = false;
+	
+	this.allowAngledFaces = false;
+	this.setTexture(textureCode, 4, 1/4, [0,1,2,1]);
 };
 
 Enemy.prototype.getFaceByDirection = function(direction){
@@ -25,25 +29,33 @@ Enemy.prototype.getFaceByDirection = function(direction){
 	return face;
 };
 
-Enemy.prototype.setTexture = function(textureBaseCode, imageNum, imageSpeed){
+Enemy.prototype.setTexture = function(textureBaseCode, imageNum, imageSpeed, indexAnimation){
 	this.textureCode = textureBaseCode;
 	this.imgNum = imageNum;
 	this.imgSpeed = imageSpeed;
 	this.imageIndex = 0;
+	this.indexAnimation = indexAnimation;
 };
 
 Enemy.prototype.getTexture = function(angle){
-	var face = this.getFaceByDirection(angle);
-	var dirFace = this.getFaceByDirection(this.direction);
+	var face, img;
 	var xScale = 1;
-	
-	face = (face + 12 - dirFace) % 8;
-	if (face == 5){ face = 3; xScale = -1; }
-	else if (face == 6){ face = 2; xScale = -1; }
-	else if (face == 7){ face = 1; xScale = -1; }
+	if (this.allowAngledFaces){
+		face = this.getFaceByDirection(angle);
+		dirFace = this.getFaceByDirection(this.direction);
+		img = this.imageIndex << 0;
+		
+		face = (face + 12 - dirFace) % 8;
+		if (face == 5){ face = 3; xScale = -1; }
+		else if (face == 6){ face = 2; xScale = -1; }
+		else if (face == 7){ face = 1; xScale = -1; }
+	}else{
+		face = "";
+		img = this.indexAnimation[(this.imageIndex << 0)];
+	}
 	
 	var obj = {
-		texCode: this.textureCode + face + "_" + this.imageIndex,
+		texCode: this.textureCode + face + "_" + img,
 		xScale: xScale
 	};
 	

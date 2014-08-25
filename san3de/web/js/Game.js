@@ -15,10 +15,10 @@ function Game(){
 	this.gameSize = vec2(320,200);
 	this.eng = new Engine(this.gameSize, Utils.get("divGame"));
 	this.font = '10px "Arial"';
-	this.console = new Console(10, 5, this);
+	this.console = new Console(10, 15, 13, this);
 	this.render = new RaycastRender(this.eng.getData(vec2(208,127)), 60, 180, this);
 	this.render.setFog(1, 10);
-	this.renderPos = vec2(16,17);
+	this.renderPos = vec2(24,36);
 	
 	this.canvasPos = vec2(this.eng.canvas.offsetLeft, this.eng.canvas.offsetTop);
 	this.scale = this.eng.canvas.offsetHeight / 200;
@@ -48,7 +48,7 @@ function Game(){
 	var game = this;
 	this.loadImages();
 	this.loadAudios();
-	this.eng.loadKTD("kramBillboards.ktd", false, function(data){ game.parseBillboards(data); });
+	this.eng.loadKTD("16x16U5Billboards.ktd", false, function(data){ game.parseBillboards(data); });
 }
 
 /*===================================================
@@ -91,8 +91,8 @@ Game.prototype.loadAudios = function(){
 ===================================================*/
 Game.prototype.loadImages = function(){
 	this.images.titleS = this.eng.loadImage("img/titleScreen.png");
-	this.images.viewport = this.eng.loadImage("img/viewport.png");
-	this.images.scrollFont = this.eng.loadImage("img/scrollFont.png");
+	this.images.viewport = this.eng.loadImage("img/buUI.png");
+	this.images.scrollFont = this.eng.loadImage("img/scrollFontWhite.png");
 };
 
 Game.prototype.printGreet = function(){
@@ -285,7 +285,7 @@ Game.prototype.loopGame = function(/*float*/ deltaT){
 			var ctx = game.getCtx();
 			ctx.drawImage(game.images.viewport, 0, 0);
 			
-			game.console.render(17, 170);
+			game.console.render(242, 11);
 		}
 		
 		// Debug: Draw the FPS count

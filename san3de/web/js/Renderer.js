@@ -114,7 +114,7 @@ RaycastRender.prototype.fillLine = function(/*Int*/ x, /*Int*/ y1, /*Int*/ y2, /
 		if (vr > 1)
 			ty = ((i - y1) / size * (texture.height * vr)) % (texture.height - 1) << 0;
 		else
-			ty = ((i - y1) / size * (texture.height - 1)) << 0;
+			ty = ((i - y1) / size * (texture.height )) << 0;
 			
 		if (ty < texture.offsetT || ty >= texture.offsetB){
 			continue;
@@ -430,7 +430,7 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var rLine = sRLine / cDist;
 	
 	x = mt.round(x);
-	return {x: x, dist: cDist, scale: scale, angle: angle, zScale: rLine, onBack: onBack};
+	return {x: x, dist: cDist, scale: scale, angle: angle, zScale: rLine, onBack: onBack, angB: angB};
 };
 
 /*===================================================
@@ -462,6 +462,7 @@ RaycastRender.prototype.objectCasting = function(/*Vec2*/ position, /*float*/ di
 		// Cast a ray to the object
 		var ray = this.castTo(position, ins.position, lAng, rAng, direction, false);
 		if (!ray) continue;
+		if (ray.angB >= mt.degToRad(70)) continue;
 		
 		// Center the object in its position
 		ray.x = mt.round(ray.x - ray.scale / 2);

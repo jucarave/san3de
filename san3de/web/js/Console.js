@@ -1,8 +1,9 @@
-function Console(/*Int*/ maxMessages, /*Int*/ limit, /*Game*/ game){
+function Console(/*Int*/ maxMessages, /*Int*/ limit, /*Int*/ splitAt,  /*Game*/ game){
 	this.messages = [];
 	this.maxMessages = maxMessages;
 	this.game = game;
 	this.limit = limit;
+	this.splitAt = splitAt;
 	
 	this.spriteFont = null;
 	this.listOfChars = null;
@@ -33,8 +34,33 @@ Console.prototype.createSpriteFont = function(/*Image*/ spriteFont, /*String*/ c
 	this.spaceChars = spriteFont.width / charactersUsed.length;
 };
 
+Console.prototype.formatText = function(/*String*/ message){
+	var txt = message.split(" ");
+	var line = "";
+	var ret = [];
+	
+	for (var i=0,len=txt.length;i<len;i++){
+		var word = txt[i];
+		if ((line + " " + word).length <= this.splitAt){
+			if (line != "") line += " ";
+			line += word;
+		}else{
+			ret.push(line);
+			line = word;
+		}
+	}
+	
+	ret.push(line);
+	
+	return ret;
+};
+
 Console.prototype.addSFMessage = function(/*String*/ message){
-	this.messages.push(message);
+	var msg = this.formatText(message);
+	for (var i=0,len=msg.length;i<len;i++){
+		this.messages.push(msg[i]);
+	}
+	
 	if (this.messages.length > this.limit){
 		this.messages.splice(0,1);
 	}

@@ -5,7 +5,7 @@ function TitleScreen(/*Game*/ game){
 
 TitleScreen.prototype.step = function(){
 	if (this.game.getKeyPressed(13) || this.game.getMouseButtonPressed()){
-		this.game.loadMap("kramBuild.ktd");
+		this.game.loadMap("16x16U5.ktd");
 		this.game.scene = null;
 		//this.game.playMusic("descent");
 	}
