@@ -181,6 +181,9 @@ Game.prototype.parseMap = function(/*Object*/ data){
 	
 	Colors.textures = data.colors;
 	Colors.texturesShadow = data.colorsS;
+	
+	var ctx = game.getCtx();
+	ctx.clearRect(0,0,ctx.width,ctx.height);
 };
 
 /*===================================================

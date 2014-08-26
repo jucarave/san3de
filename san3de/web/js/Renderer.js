@@ -268,12 +268,13 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		mDist *= cosB;
 		
 		// Calculate the height of the wall
+		var z2 = (64 * mapManager.height) - this.z;
 		var sRLine = this.rBase * this.z;
 		var rLine = sRLine / mDist;
-		line = this.heightR / mDist;
+		line = (this.rBase * z2) / mDist;
 		var height = this.z - 32;
 		var y2 = mt.round((this.size.b / 2) + rLine / 2) + this.zAngle + height;
-		var y1 = mt.round(y2 - (line * mapManager.height));
+		var y1 = mt.round((this.size.b / 2) - line / 2) + this.zAngle + height;
 		this.matDist[i] = mDist;
 		
 		var alpha = this.getAlphaByDistance(mDist);
@@ -325,7 +326,6 @@ RaycastRender.prototype.raycast = function(/*MapManager*/ mapManager){
 		}
 		
 		var fry = y1 - 1;
-		var z2 = (64 * mapManager.height) - this.z;
 		rel = this.floorR * z2 / cosB;
 		// Do the ceil casting and drawing
 		for (var f=fry;f>=0;f--){

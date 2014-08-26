@@ -1,5 +1,5 @@
 var EnemyFactory = {
-	bat: {code: "bat", name: "Giat bat", stand: {texCode: "texBatStand", animKeys: [0,1,2,1], speed: 1 / 4}},
+	bat: {code: "bat", name: "Giat bat", feature: "flying", stand: {texCode: "texBatStand", animKeys: [0,1,2,1], speed: 1 / 4}},
 	
 	getEnemy: function(enemyCode){
 		if (!EnemyFactory[enemyCode]) throw "Invalid Enemy Code: " + enemyCode;

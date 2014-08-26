@@ -13,7 +13,6 @@ function Enemy(/*Vec2*/ position, /*int*/ direction, /*EnemyFactory*/ enemyInfo,
 	this.indexAnimation = null;
 	
 	this.solid = true;
-	this.rotate = false;
 	
 	this.allowAngledFaces = false;
 	this.animation = "stand";
@@ -29,6 +28,12 @@ Enemy.prototype.getFaceByDirection = function(direction){
 	}
 	
 	return face;
+};
+
+Enemy.prototype.changeAnimation = function(animationCode){
+	this.animation = animationCode;
+	if (!this.enemy[animationCode]) animationCode = "stand";
+	this.setTexture(this.enemy[animationCode]);
 };
 
 Enemy.prototype.setTexture = function(textureInfo){
@@ -68,13 +73,23 @@ Enemy.prototype.isSolid = function(){
 	return this.solid;
 };
 
+Enemy.prototype.step = function(){
+	var p = this.mapManager.player.position;
+	var xx = Math.abs(this.position.a - p.a);
+	var yy = Math.abs(this.position.b - p.b);
+		
+	if (xx <= 5 && yy <= 5 && this.animation != "walk"){
+		this.changeAnimation("walk");
+	}else if (xx > 5 && yy > 5 && this.animation != "stand"){
+		this.changeAnimation("stand");
+	}
+};
+
 Enemy.prototype.loop = function(){
 	if (this.imgSpeed > 0 && this.imgNum > 0){
 		this.imageIndex += this.imgSpeed;
 		if (this.imageIndex >= this.imgNum) this.imageIndex = 0;
 	}
 
-	if (this.rotate){
-		this.direction += Math.PI2;
-	}
+	this.step();
 };
