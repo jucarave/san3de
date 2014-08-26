@@ -227,7 +227,11 @@ MapManager.prototype.createInstances = function(/*Array*/ instances){
 		
 		if (type == 0){ this.instances.push(new Billboard(vec, ins[4], ins.splice(5), this)); }
 		else if (type == 1){ this.doors.push(new Door(vec, ins[5], ins[4], ins.splice(6), this)); }
-		else if (type == 2){ this.instances.push(new Enemy(vec, parseInt(ins[4]), ins[5], this)); }
+		else if (type == 2){ 
+			var enemyInfo = EnemyFactory.getEnemy(ins[5]);
+			var enemy = new Enemy(vec, parseInt(ins[4]), enemyInfo, this);
+			this.instances.push(enemy); 
+		}
 		else if (type == 3){ this.traps.push({position: vec2(x, y)}); }
 		else if (type == 4){ this.instances.push(new Item(vec, ins[4], ins.splice(5), this)); }
 		else if (type == 5){ this.doors.push(new Door(vec, ins[5], ins[4], ins.splice(6), this)); }

@@ -1,7 +1,8 @@
-function Enemy(/*Vec2*/ position, /*int*/ direction, /*String*/ textureCode, /*MapManager*/ mapManager){
+function Enemy(/*Vec2*/ position, /*int*/ direction, /*EnemyFactory*/ enemyInfo, /*MapManager*/ mapManager){
 	this.position = position;
-	this.textureCode = textureCode;
+	this.textureCode = null;
 	this.mapManager = mapManager;
+	this.enemy = enemyInfo;
 	
 	this.direction = Math.degToRad(direction);
 	this.imageIndex = 0;
@@ -15,7 +16,8 @@ function Enemy(/*Vec2*/ position, /*int*/ direction, /*String*/ textureCode, /*M
 	this.rotate = false;
 	
 	this.allowAngledFaces = false;
-	this.setTexture(textureCode, 4, 1/4, [0,1,2,1]);
+	this.animation = "stand";
+	this.setTexture(enemyInfo[this.animation]);
 };
 
 Enemy.prototype.getFaceByDirection = function(direction){
@@ -29,12 +31,12 @@ Enemy.prototype.getFaceByDirection = function(direction){
 	return face;
 };
 
-Enemy.prototype.setTexture = function(textureBaseCode, imageNum, imageSpeed, indexAnimation){
-	this.textureCode = textureBaseCode;
-	this.imgNum = imageNum;
-	this.imgSpeed = imageSpeed;
+Enemy.prototype.setTexture = function(textureInfo){
+	this.textureCode = textureInfo.texCode;
+	this.imgNum = textureInfo.animKeys.length;
+	this.imgSpeed = textureInfo.speed;
 	this.imageIndex = 0;
-	this.indexAnimation = indexAnimation;
+	this.indexAnimation = textureInfo.animKeys;
 };
 
 Enemy.prototype.getTexture = function(angle){
