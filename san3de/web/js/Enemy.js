@@ -17,6 +17,8 @@ function Enemy(/*Vec2*/ position, /*int*/ direction, /*EnemyFactory*/ enemyInfo,
 	this.allowAngledFaces = false;
 	this.animation = "stand";
 	this.setTexture(enemyInfo[this.animation]);
+	
+	this.hurt = 0;
 };
 
 Enemy.prototype.getFaceByDirection = function(direction){
@@ -73,15 +75,22 @@ Enemy.prototype.isSolid = function(){
 	return this.solid;
 };
 
+Enemy.prototype.active = function(){
+	this.changeAnimation("hurt");
+	this.hurt = 10;
+};
+
 Enemy.prototype.step = function(){
-	var p = this.mapManager.player.position;
-	var xx = Math.abs(this.position.a - p.a);
-	var yy = Math.abs(this.position.b - p.b);
-		
-	if (xx <= 5 && yy <= 5 && this.animation != "walk"){
-		this.changeAnimation("walk");
-	}else if (xx > 5 && yy > 5 && this.animation != "stand"){
-		this.changeAnimation("stand");
+	if (this.hurt == 0){
+		var p = this.mapManager.player.position;
+		var xx = Math.abs(this.position.a - p.a);
+		var yy = Math.abs(this.position.b - p.b);
+			
+		if (xx <= 5 && yy <= 5 && this.animation != "walk"){
+			this.changeAnimation("walk");
+		}else if (xx > 5 && yy > 5 && this.animation != "stand"){
+			this.changeAnimation("stand");
+		}
 	}
 };
 
@@ -90,6 +99,8 @@ Enemy.prototype.loop = function(){
 		this.imageIndex += this.imgSpeed;
 		if (this.imageIndex >= this.imgNum) this.imageIndex = 0;
 	}
+
+	if (this.hurt > 0) this.hurt--;
 
 	this.step();
 };
