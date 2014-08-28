@@ -77,7 +77,7 @@ Enemy.prototype.isSolid = function(){
 
 Enemy.prototype.active = function(){
 	this.changeAnimation("hurt");
-	this.hurt = 10;
+	this.hurt = 5;
 };
 
 Enemy.prototype.step = function(){
