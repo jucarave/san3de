@@ -67,7 +67,7 @@ Door.prototype.isSolid = function(x, y){
 			case "UR":
 				xx = x - this.leftPos.a;
 				yy = y - this.leftPos.b ;
-				if (yy >= xx) return true;
+				if (yy + 0.2 >= xx) return true;
 			break;
 			case "UL":
 				xx = this.leftPos.a - x;

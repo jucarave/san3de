@@ -417,8 +417,8 @@ RaycastRender.prototype.castTo = function(/*Vec2*/ posA, /*Vec2*/ posB, /*float*
 	var cDist = dist * cos;
 	var onBack = false;
 	if (cDist <= 0 && !drawBehind) return;
-	if (angB >= 1.03 && drawBehind){ 
-		cDist = dist * (2 / (angB + 3));
+	if (angB >= 1.3 && drawBehind){ 
+		cDist = dist * (3 / (angB + 6) - 0.2);
 		var onBack = true;
 	}
 	
